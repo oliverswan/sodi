@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/invoice/add
+Content-Type: application/json
+
+{
+  "contactName": "Hamilton",
+  "items":[{"code":"001"}]
+}
+
+###
