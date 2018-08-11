@@ -27,10 +27,23 @@ public class Invoice {
     private String DueDate;
     private int status;/* 0 draft 1 approved 2 imported*/
     private List<InvoiceItem> items = new ArrayList<InvoiceItem>();
+    private double totalamount;
 
+    public double getTotalamount() {
+        return totalamount;
+    }
+
+    public void setTotalamount(double totalamount) {
+        this.totalamount = totalamount;
+    }
+    public void addTotalAmount(double amount)
+    {
+        this.totalamount +=amount;
+    }
 
     public void addItem(InvoiceItem item){
         this.items.add(item);
+        this.addTotalAmount(item.getTotalamount());
     }
 
     public String getEmailAddress() {

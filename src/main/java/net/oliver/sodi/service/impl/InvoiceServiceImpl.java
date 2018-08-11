@@ -23,10 +23,16 @@ public class InvoiceServiceImpl implements IInvoiceService {
     public void saveInvoices(List<Invoice> list) {
 
         dao.save(list);
+
     }
 
     @Override
     public List<Invoice> findAll() {
         return dao.findAll();
+    }
+
+    @Override
+    public List<Invoice> findDraft() {
+        return dao.findByStatus(0);
     }
 }

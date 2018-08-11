@@ -25,7 +25,7 @@
     <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--日志文件输出的文件名 -->
-            <FileNamePattern>${LOG_APP_HOME}/ocean_platfrom.%d{yyyy-MM-dd}.log
+            <FileNamePattern>${LOG_APP_HOME}/sodi_platfrom.%d{yyyy-MM-dd}.log
             </FileNamePattern>
             <!--日志文件保留天数 -->
             <MaxHistory>${LOG_MAX_HISTORY}</MaxHistory>
@@ -34,12 +34,13 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{500} - %msg%n</pattern>
         </encoder>
     </appender>
+
     <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${log.error.log.level}</level>
         </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_APP_HOME}/ocean_platfrom-error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOG_APP_HOME}/sodi_platfrom-error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
         </rollingPolicy>
         <encoder charset="${log.charset}">
@@ -51,7 +52,9 @@
         <level value="debug" />
     </logger>
 
-
+    <logger name="net.oliver">
+        <level value="debug" />
+    </logger>
 
     <root level="INFO">
         <appender-ref ref="APP" />

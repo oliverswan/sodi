@@ -11,4 +11,6 @@ public interface IInvoiceService {
     void saveInvoices(List<Invoice> list);
 
     List<Invoice> findAll();
+
+    List<Invoice> findDraft();
 }

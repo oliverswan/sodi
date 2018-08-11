@@ -1,9 +1,20 @@
-POST http://localhost:8080/api/invoice/add
+POST http://localhost:8083/api/invoice/add
 Content-Type: application/json
 
 {
   "contactName": "Hamilton",
   "items":[{"code":"001"}]
 }
+
+###
+
+GET http://localhost:8083/api/invoices/draft
+Content-Type: application/json
+
+###
+POST http://localhost:8083/api/invoices/approveall2
+Content-Type: text/plain
+
+"1685@15-9034,1684@15-9034,1683@15-9034,1682@15-9034,1681@15-9034"
 
 ###

@@ -7,8 +7,8 @@ public class InvoiceItem {
 
     private String InventoryItemCode;
     private String Description;
-    private String Quantity;
-    private String UnitAmount;
+    private int Quantity;
+    private double UnitAmount;
     private String Discount;
     private String AccountCode;
     private String TaxType;
@@ -21,6 +21,15 @@ public class InvoiceItem {
     private String product_attribute;
     private String product_subtotal_discount;
     private String product_quantity;
+    private double totalamount;
+
+    public double getTotalamount() {
+        return totalamount;
+    }
+
+    public void setTotalamount(double totalamount) {
+        this.totalamount = totalamount;
+    }
 
     public String getInventoryItemCode() {
         return InventoryItemCode;
@@ -38,19 +47,19 @@ public class InvoiceItem {
         Description = description;
     }
 
-    public String getQuantity() {
+    public int getQuantity() {
         return Quantity;
     }
 
-    public void setQuantity(String quantity) {
+    public void setQuantity(int quantity) {
         Quantity = quantity;
     }
 
-    public String getUnitAmount() {
+    public double getUnitAmount() {
         return UnitAmount;
     }
 
-    public void setUnitAmount(String unitAmount) {
+    public void setUnitAmount(double unitAmount) {
         UnitAmount = unitAmount;
     }
 

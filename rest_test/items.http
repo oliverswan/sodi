@@ -1,4 +1,9 @@
-GET http://localhost:8080/api/items
+GET http://localhost:8083/api/items
+Content-Type: application/json
+
+###
+
+GET http://localhost:8083/api/items/AC614.030
 Content-Type: application/json
 
 ###
