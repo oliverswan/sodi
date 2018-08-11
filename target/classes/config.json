@@ -1,0 +1,8 @@
+{
+  "AppType" : "PRIVATE",
+  "UserAgent": "AgAppHome-CDPB2R",
+  "ConsumerKey" : "627N9RERYMNAKV0LJTEZOVMEIILBCX",
+  "ConsumerSecret" : "VJBFZESWGZDF1PQPZHGF4VQTDTXLEG",
+  "PrivateKeyCert" :  "certs/public_privatekey.pfx",
+  "PrivateKeyPassword" :  "123456"
+}
