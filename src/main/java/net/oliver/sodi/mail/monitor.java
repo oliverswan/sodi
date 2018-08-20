@@ -32,17 +32,104 @@ package net.oliver.sodi.mail;
  */
 
 import com.sun.mail.imap.IMAPFolder;
+import org.apache.james.mime4j.codec.DecodeMonitor;
+import org.apache.james.mime4j.message.DefaultBodyDescriptorBuilder;
+import org.apache.james.mime4j.parser.ContentHandler;
+import org.apache.james.mime4j.parser.MimeStreamParser;
+import org.apache.james.mime4j.stream.BodyDescriptorBuilder;
+import org.apache.james.mime4j.stream.MimeConfig;
+import tech.blueglacier.email.Attachment;
+import tech.blueglacier.email.Email;
+import tech.blueglacier.parser.CustomContentHandler;
 
 import javax.mail.*;
 import javax.mail.event.MessageCountAdapter;
 import javax.mail.event.MessageCountEvent;
+import javax.mail.internet.MimeBodyPart;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /* Monitors given mailbox for new mail */
 
 public class monitor {
 
+    public void getContent(Message message) throws MessagingException, IOException
+    {
+        String body = "";
+        String from = "";
+        ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
+        String contentType = message.getContentType();
+        Address[] addresses = message.getFrom();
+        if(addresses.length == 1)
+            from = addresses[0].toString();
+        else
+        {
+            for(int num = 0; num < addresses.length - 1; num++)
+                from += addresses[num].toString() + ", ";
+            from += addresses[addresses.length].toString();
+        }
+        if(contentType.contains("TEXT/PLAIN"))
+        {
+            Object content = message.getContent();
+            if(content != null)
+                body += content.toString();
+        }
+        else if(contentType.contains("TEXT/HTML"))
+        {
+            Object content = message.getContent();
+            if(content != null)
+                body += Jsoup.parse((String)content).text();
+        }
+        else if(contentType.contains("multipart"))
+        {
+            Multipart mp = (Multipart)message.getContent();
+            int numParts = mp.getCount();
+            for(int count = 0; count < numParts; count++)
+            {
+                MimeBodyPart part = (MimeBodyPart)mp.getBodyPart(count);
+                String content = part.getContent().toString();
+                if(MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
+                    attachments.add(part);
+                else if(part.getContentType().contains("TEXT/HTML"))
+                    body += Jsoup.parse(content).text();
+                else
+                    body += content;
+            }
+        }
+//        return new MailList(from, message.getSubject(), body,
+//                message.getSentDate().toString(), attachments);
+    }
+
+    public static void parse(Message msg) throws Exception {
+        ContentHandler contentHandler = new CustomContentHandler();
+
+        MimeConfig mime4jParserConfig = MimeConfig.DEFAULT;
+        BodyDescriptorBuilder bodyDescriptorBuilder = new DefaultBodyDescriptorBuilder();
+        MimeStreamParser mime4jParser = new MimeStreamParser(mime4jParserConfig,DecodeMonitor.SILENT,bodyDescriptorBuilder);
+        mime4jParser.setContentDecoding(true);
+        mime4jParser.setContentHandler(contentHandler);
+
+        InputStream mailIn = msg.getInputStream();
+        mime4jParser.parse(mailIn);
+
+        Email email = ((CustomContentHandler) contentHandler).getEmail();
+
+        List<Attachment> attachments =  email.getAttachments();
+
+        Attachment calendar = email.getCalendarBody();
+        Attachment htmlBody = email.getHTMLEmailBody();
+        Attachment plainText = email.getPlainTextEmailBody();
+
+        String to = email.getToEmailHeaderValue();
+        String cc = email.getCCEmailHeaderValue();
+        String from = email.getFromEmailHeaderValue();
+        String subject = email.getEmailSubject();
+
+        System.out.println(htmlBody.toString());
+    }
     public static void main(String argv[]) {
 //        if (argv.length != 5) {
 //            System.out.println(
@@ -53,14 +140,11 @@ public class monitor {
 
         try {
             Properties props = System.getProperties();
-
             // Get a Session object
             Session session = Session.getInstance(props, null);
             // session.setDebug(true);
-
             // Get a Store object
             Store store = session.getStore("imap");
-
             // Connect
             store.connect("imap.126.com", "oliver_reg", "maiyang9");
 
@@ -72,7 +156,6 @@ public class monitor {
             }
 
             folder.open(Folder.READ_WRITE);
-
             // Add messageCountListener to listen for new messages
             folder.addMessageCountListener(new MessageCountAdapter() {
                 public void messagesAdded(MessageCountEvent ev) {
@@ -83,8 +166,7 @@ public class monitor {
                     for (int i = 0; i < msgs.length; i++) {
                         try {
                             System.out.println("-----");
-                            System.out.println("Message " +
-                                    msgs[i].getMessageNumber() + ":");
+                            System.out.println("Message " +msgs[i].getMessageNumber() + ":");
                             msgs[i].writeTo(System.out);
                         } catch (IOException ioex) {
                             ioex.printStackTrace();

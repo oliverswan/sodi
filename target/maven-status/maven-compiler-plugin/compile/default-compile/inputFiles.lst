@@ -25,9 +25,8 @@ C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\m
 C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\util\MongoAutoidUtil.java
 C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\service\IItemService.java
 C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\model\Item.java
-C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\mail\mailapp.java
+C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\mail\monitor.java
 C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\controller\ItemController.java
 C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\service\impl\InvoiceServiceImpl.java
 C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\model\BackOrderResult.java
-C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\mail\MailBean.java
 C:\MyFiles\myprojects\web_service\sodi_inventory\src\main\java\net\oliver\sodi\service\IInvoiceService.java
