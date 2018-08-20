@@ -21,6 +21,11 @@ public class ItemSericeImpl implements IItemService {
     MongoTemplate mongoTemplate;
 
     @Override
+    public void save(Item item) {
+        dao.save(item);
+    }
+
+    @Override
     public List<Item> findAll() {return dao.findAll(); }
 
     @Override

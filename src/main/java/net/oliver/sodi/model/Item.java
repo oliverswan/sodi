@@ -19,8 +19,32 @@ public class Item {
     private List<Integer> soldHistory;
     private double spm;// 平均每月销售量
     private double msoh;
+    private double weight;
+    private double price;
+    private double cprice;
 
+    public double getCprice() {
+        return cprice;
+    }
+    public void setCprice(double cprice) {
+        this.cprice = cprice;
+    }
 
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
     public String getName() {
         return name;
     }
@@ -87,7 +111,18 @@ public class Item {
 
     public void setStock(int stock) {
         this.stock = stock;
-        this.msoh = MathUtil.trimDouble(this.stock/this.spm);
+        try {
+            if(this.spm == 0)
+            {
+                this.msoh = this.stock;
+                return;
+            }
+            this.msoh = MathUtil.trimDouble(this.stock/this.spm);
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
     }
 
     public double getSalesPerMonth() {

@@ -7,3 +7,7 @@ GET http://localhost:8083/api/items/AC614.030
 Content-Type: application/json
 
 ###
+GET http://45.78.74.5:8083/api/items
+Content-Type: application/json
+
+###

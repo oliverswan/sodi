@@ -9,7 +9,9 @@ public interface IBackorderService {
 
     public void saveBackOrders(List<Backorder> list);
     public void save(Backorder bo);
-    public List<Backorder> findAll();
+//    public void update(Backorder bo);
+    public List<Backorder> findNotCompleted();
     public Map<String,Integer> report();
+    public List<Backorder> findByInvoiceNumber(String invoice_number);
 
 }

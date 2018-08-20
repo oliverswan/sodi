@@ -26,9 +26,10 @@ public class BackOrderServiceImpl implements IBackorderService {
         dao.save(bo);
     }
 
+
     @Override
-    public List<Backorder> findAll() {
-        return dao.findAll();
+    public List<Backorder> findNotCompleted() {
+        return dao.findByStatusLessThan(1);
     }
 
     @Override
@@ -50,5 +51,10 @@ public class BackOrderServiceImpl implements IBackorderService {
             }
         }
         return result;
+    }
+
+    @Override
+    public List<Backorder> findByInvoiceNumber(String invoice_number) {
+        return dao.findByInvoiceNumber(invoice_number);
     }
 }

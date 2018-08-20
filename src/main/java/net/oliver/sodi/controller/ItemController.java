@@ -2,15 +2,13 @@ package net.oliver.sodi.controller;
 
 import net.oliver.sodi.dao.IItemDao;
 import net.oliver.sodi.model.Item;
+import net.oliver.sodi.model.ItemResult;
 import net.oliver.sodi.service.IItemService;
 import net.oliver.sodi.util.MongoAutoidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,8 +30,14 @@ public class ItemController {
 
     @GetMapping("")
     @ResponseBody
-    public List<Item> getAll()  {
-        return service.findAll();
+    public ItemResult getAll(@RequestParam int echo)  {
+
+        ItemResult r = new ItemResult();
+        List<Item> l = service.findAll();
+        r.setEcho(echo);
+        r.setFiltered(l.size());
+        r.setData(l);
+        return r;
     }
 
     @GetMapping("/{code}")
@@ -41,6 +45,13 @@ public class ItemController {
     public List<Item> getItem(@PathVariable String code )  {
 
         return service.findByCode(code);
+    }
+
+    @RequestMapping(value = { "/save" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String addInvoices(@RequestBody Item item)  {
+        service.save(item);
+        return "{'status':'ok'}";
     }
 
 }

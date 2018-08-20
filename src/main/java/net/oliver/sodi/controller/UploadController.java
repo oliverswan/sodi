@@ -2,7 +2,6 @@ package net.oliver.sodi.controller;
 
 import com.opencsv.CSVReader;
 import net.oliver.sodi.dao.IInvoiceDao;
-import net.oliver.sodi.model.Backorder;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.model.InvoiceItem;
 import net.oliver.sodi.service.IBackorderService;
@@ -84,17 +83,18 @@ public class UploadController {
                         invoice.setStatus(0);
                         invoice.setId(sequence.getNextSequence("invoice"));
                         excel.put(reference, invoice);
-                        if (!StringUtils.isBlank(strArr[30])) {
+                       /* if (!StringUtils.isBlank(strArr[30])) {
                             String[] bos = strArr[30].split(",");
                             Backorder bo = new Backorder();
-                            bo.setInvoice_number(invoice.getInvoiceNumber());
+                            bo.setId(sequence.getNextSequence("backorder"));
+                            bo.setInvoiceNumber(invoice.getInvoiceNumber());
                             for (String str : bos) {
                                 String[] detail = str.split("#");
                                 int qu = Integer.parseInt(detail[0]);
                                 bo.addItem(detail[1], qu);
                             }
                             backorderService.save(bo);
-                        }
+                        }*/
                     }
                     InvoiceItem item = new InvoiceItem();
                     item.setInventoryItemCode(strArr[14]);
