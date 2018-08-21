@@ -56,7 +56,7 @@ import java.util.Properties;
 
 public class monitor {
 
-    public void getContent(Message message) throws MessagingException, IOException
+    public static void getContent(Message message) throws MessagingException, IOException
     {
         String body = "";
         String from = "";
@@ -80,8 +80,9 @@ public class monitor {
         else if(contentType.contains("TEXT/HTML"))
         {
             Object content = message.getContent();
-            if(content != null)
-                body += Jsoup.parse((String)content).text();
+            System.out.println(content);
+//            if(content != null)
+//                body += Jsoup.parse((String)content).text();
         }
         else if(contentType.contains("multipart"))
         {
@@ -94,7 +95,8 @@ public class monitor {
                 if(MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
                     attachments.add(part);
                 else if(part.getContentType().contains("TEXT/HTML"))
-                    body += Jsoup.parse(content).text();
+//                    body += Jsoup.parse(content).text();
+                    System.out.println(content);
                 else
                     body += content;
             }
@@ -167,7 +169,8 @@ public class monitor {
                         try {
                             System.out.println("-----");
                             System.out.println("Message " +msgs[i].getMessageNumber() + ":");
-                            msgs[i].writeTo(System.out);
+                            monitor.getContent(msgs[i]);
+//                            msgs[i].writeTo(System.out);
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
                         } catch (MessagingException mex) {

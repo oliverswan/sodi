@@ -124,6 +124,11 @@
             <artifactId>email-mime-parser</artifactId>
             <version>1.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.11.3</version>
+        </dependency>
     </dependencies>
 
     <repositories>
