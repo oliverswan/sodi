@@ -32,6 +32,7 @@ package net.oliver.sodi.mail;
  */
 
 import com.sun.mail.imap.IMAPFolder;
+import net.oliver.sodi.util.JsoupUtil;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.message.DefaultBodyDescriptorBuilder;
 import org.apache.james.mime4j.parser.ContentHandler;
@@ -58,24 +59,25 @@ public class monitor {
 
     public static void getContent(Message message) throws MessagingException, IOException
     {
-        String body = "";
-        String from = "";
+//        String body = "";
+//        String from = "";
         ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
         String contentType = message.getContentType();
-        Address[] addresses = message.getFrom();
-        if(addresses.length == 1)
-            from = addresses[0].toString();
-        else
-        {
-            for(int num = 0; num < addresses.length - 1; num++)
-                from += addresses[num].toString() + ", ";
-            from += addresses[addresses.length].toString();
-        }
+//        Address[] addresses = message.getFrom();
+//        if(addresses.length == 1)
+//            from = addresses[0].toString();
+//        else
+//        {
+//            for(int num = 0; num < addresses.length - 1; num++)
+//                from += addresses[num].toString() + ", ";
+//            from += addresses[addresses.length].toString();
+//        }
+
         if(contentType.contains("TEXT/PLAIN"))
         {
-            Object content = message.getContent();
-            if(content != null)
-                body += content.toString();
+//            Object content = message.getContent();
+//            if(content != null)
+//                body += content.toString();
         }
         else if(contentType.contains("TEXT/HTML"))
         {
@@ -88,21 +90,25 @@ public class monitor {
         {
             Multipart mp = (Multipart)message.getContent();
             int numParts = mp.getCount();
-            for(int count = 0; count < numParts; count++)
+            for(int count = 1; count < numParts; count++)
             {
                 MimeBodyPart part = (MimeBodyPart)mp.getBodyPart(count);
                 String content = part.getContent().toString();
-                if(MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
-                    attachments.add(part);
-                else if(part.getContentType().contains("TEXT/HTML"))
-//                    body += Jsoup.parse(content).text();
-                    System.out.println(content);
-                else
-                    body += content;
+
+//                if(MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
+//                    attachments.add(part);
+//
+//                else
+
+                    if(part.getContentType().contains("text/html"))
+                {
+                    JsoupUtil.getInvoice(content);
+                }
+//                else
+//                    body += content;
             }
         }
-//        return new MailList(from, message.getSubject(), body,
-//                message.getSentDate().toString(), attachments);
+
     }
 
     public static void parse(Message msg) throws Exception {
