@@ -23,6 +23,7 @@ public class Invoice {
     private String POCountry;
     private String InvoiceNumber;
     private String Reference;
+    private String orderNumber;
     private String InvoiceDate;
     private String DueDate;
     private int status;/* 0 draft 1 approved 2 imported*/
@@ -182,7 +183,15 @@ public class Invoice {
         this.items = items;
     }
 
-//    @Override
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    //    @Override
 //    public String toString() {
 //        return "Invoice{" +
 //                "id='" + id + '\'' +

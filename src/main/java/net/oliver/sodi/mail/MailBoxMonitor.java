@@ -32,6 +32,8 @@ package net.oliver.sodi.mail;
  */
 
 import com.sun.mail.imap.IMAPFolder;
+import net.oliver.sodi.model.Invoice;
+import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.util.JsoupUtil;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.message.DefaultBodyDescriptorBuilder;
@@ -39,6 +41,8 @@ import org.apache.james.mime4j.parser.ContentHandler;
 import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.BodyDescriptorBuilder;
 import org.apache.james.mime4j.stream.MimeConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import tech.blueglacier.email.Attachment;
 import tech.blueglacier.email.Email;
 import tech.blueglacier.parser.CustomContentHandler;
@@ -54,10 +58,13 @@ import java.util.List;
 import java.util.Properties;
 
 /* Monitors given mailbox for new mail */
+@Component
+public class MailBoxMonitor {
 
-public class monitor {
+    @Autowired
+    IInvoiceService invoiceService;
 
-    public static void getContent(Message message) throws MessagingException, IOException
+    public void getContent(Message message) throws MessagingException, IOException
     {
 //        String body = "";
 //        String from = "";
@@ -90,9 +97,9 @@ public class monitor {
         {
             Multipart mp = (Multipart)message.getContent();
             int numParts = mp.getCount();
-            for(int count = 1; count < numParts; count++)
-            {
-                MimeBodyPart part = (MimeBodyPart)mp.getBodyPart(count);
+//            for(int count = 1; count < numParts; count++)
+//            {
+                MimeBodyPart part = (MimeBodyPart)mp.getBodyPart(1);
                 String content = part.getContent().toString();
 
 //                if(MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
@@ -102,8 +109,11 @@ public class monitor {
 
                     if(part.getContentType().contains("text/html"))
                 {
-                    JsoupUtil.getInvoice(content);
-                }
+
+
+                    Invoice invoice = JsoupUtil.getInvoice(content);
+                    invoiceService.save(invoice);
+//                }
 //                else
 //                    body += content;
             }
@@ -138,7 +148,7 @@ public class monitor {
 
         System.out.println(htmlBody.toString());
     }
-    public static void main(String argv[]) {
+    public  void start() {
 //        if (argv.length != 5) {
 //            System.out.println(
 //                    "Usage: monitor <host> <user> <password> <mbox> <freq>");
@@ -168,15 +178,12 @@ public class monitor {
             folder.addMessageCountListener(new MessageCountAdapter() {
                 public void messagesAdded(MessageCountEvent ev) {
                     Message[] msgs = ev.getMessages();
-                    System.out.println("Got " + msgs.length + " new messages");
-
+//                    System.out.println("Got " + msgs.length + " new messages");
                     // Just dump out the new messages
                     for (int i = 0; i < msgs.length; i++) {
                         try {
-                            System.out.println("-----");
-                            System.out.println("Message " +msgs[i].getMessageNumber() + ":");
-                            monitor.getContent(msgs[i]);
-//                            msgs[i].writeTo(System.out);
+//                            System.out.println("Message " +msgs[i].getMessageNumber() + ":");
+                            getContent(msgs[i]);
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
                         } catch (MessagingException mex) {

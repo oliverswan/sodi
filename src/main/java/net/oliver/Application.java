@@ -1,5 +1,6 @@
 package net.oliver;
 
+import net.oliver.sodi.spring.SodiApplicationListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +30,12 @@ public class Application {
         return new CorsFilter(source);
     }
 
+
+
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+
+        SpringApplication springApplication = new SpringApplication(Application.class);
+        springApplication.addListeners(new SodiApplicationListener());
+        springApplication.run(args);
     }
 }

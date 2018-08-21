@@ -22,6 +22,15 @@ public class Item {
     private double weight;
     private double price;
     private double cprice;
+    private String orderNumber;
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
 
     public double getCprice() {
         return cprice;
