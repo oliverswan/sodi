@@ -32,9 +32,11 @@ package net.oliver.sodi.mail;
  */
 
 import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPMessage;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.util.JsoupUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.codec.DecodeMonitor;
 import org.apache.james.mime4j.message.DefaultBodyDescriptorBuilder;
 import org.apache.james.mime4j.parser.ContentHandler;
@@ -64,21 +66,27 @@ public class MailBoxMonitor {
     @Autowired
     IInvoiceService invoiceService;
 
+    final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
+
+//    IMAPFolder folder;
+
     public void getContent(Message message) throws MessagingException, IOException
     {
 //        String body = "";
-//        String from = "";
+        String from = "";
         ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
         String contentType = message.getContentType();
-//        Address[] addresses = message.getFrom();
-//        if(addresses.length == 1)
-//            from = addresses[0].toString();
-//        else
-//        {
-//            for(int num = 0; num < addresses.length - 1; num++)
-//                from += addresses[num].toString() + ", ";
-//            from += addresses[addresses.length].toString();
-//        }
+        Address[] addresses = message.getFrom();
+        if(addresses.length == 1)
+            from = addresses[0].toString();
+        else
+        {
+            for(int num = 0; num < addresses.length - 1; num++)
+                from += addresses[num].toString() + ", ";
+            from += addresses[addresses.length].toString();
+        }
+
+        System.out.println(from);
 
         if(contentType.contains("TEXT/PLAIN"))
         {
@@ -109,8 +117,6 @@ public class MailBoxMonitor {
 
                     if(part.getContentType().contains("text/html"))
                 {
-
-
                     Invoice invoice = JsoupUtil.getInvoice(content);
                     invoiceService.save(invoice);
 //                }
@@ -148,6 +154,26 @@ public class MailBoxMonitor {
 
         System.out.println(htmlBody.toString());
     }
+
+    synchronized  boolean updateLastSeenUID(int uid) throws MessagingException {
+
+        // Do not update lastSeenUID if it is larger than the current uid.
+        if(StringUtils.isBlank((String)System.getProperties().get("MAILBOX_LAST_SEEN_UID")))
+        {
+            System.getProperties().setProperty("MAILBOX_LAST_SEEN_UID",String.valueOf(uid));
+            return true;
+        }
+        try {
+            int lastSeenUID =Integer.parseInt((String) System.getProperties().get("MAILBOX_LAST_SEEN_UID"));
+            if (uid <= lastSeenUID) {
+                return false;
+            }
+        } catch (Exception ignored) { }
+
+        System.getProperties().setProperty("MAILBOX_LAST_SEEN_UID",String.valueOf(uid));
+        return true;
+    }
+
     public  void start() {
 //        if (argv.length != 5) {
 //            System.out.println(
@@ -155,35 +181,54 @@ public class MailBoxMonitor {
 //            System.exit(1);
 //        }
 //        System.out.println("\nTesting monitor\n");
+        Folder folder = null;
 
         try {
             Properties props = System.getProperties();
+
+            props.setProperty("mail.imaps.socketFactory.class", SSL_FACTORY);
+            props.setProperty("mail.imaps.socketFactory.fallback", "false");
+            props.setProperty("mail.imaps.port", "993");
+            props.setProperty("mail.imaps.socketFactory.port", "993");
+            props.put("mail.imaps.host", "outlook.office365.com");
+
             // Get a Session object
-            Session session = Session.getInstance(props, null);
+            Session session = Session.getInstance(props,null);
             // session.setDebug(true);
             // Get a Store object
-            Store store = session.getStore("imap");
-            // Connect
-            store.connect("imap.126.com", "oliver_reg", "maiyang9");
+//            Store store = session.getStore("imaps");
+//            // Connect
+////            store.connect("imap.126.com", "oliver_reg", "maiyang9");
+//            //DinithraSod1
+//            store.connect("sodirentalkarts.com.au", "info@sodirentalkarts.com.au", "HuluGo294");
+            Store store = session.getStore("imaps");
+            store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
 
             // Open a Folder
-            Folder folder = store.getFolder("INBOX");
+             folder = (IMAPFolder) store.getFolder("INBOX");
             if (folder == null || !folder.exists()) {
                 System.out.println("Invalid folder");
                 System.exit(1);
             }
 
+
             folder.open(Folder.READ_WRITE);
             // Add messageCountListener to listen for new messages
             folder.addMessageCountListener(new MessageCountAdapter() {
+                @Override
                 public void messagesAdded(MessageCountEvent ev) {
                     Message[] msgs = ev.getMessages();
-//                    System.out.println("Got " + msgs.length + " new messages");
-                    // Just dump out the new messages
                     for (int i = 0; i < msgs.length; i++) {
                         try {
-//                            System.out.println("Message " +msgs[i].getMessageNumber() + ":");
-                            getContent(msgs[i]);
+                            System.out.println(Thread.currentThread().getName()+" ： Receive Message " +msgs[i].getMessageNumber() + ":");
+                            if(updateLastSeenUID(msgs[i].getMessageNumber()))
+                            {
+                                getContent(msgs[i]);
+                                System.out.println("Process done!!!");
+                            }else{
+                                System.out.println("Ignore one message..");
+                            }
+
                         } catch (IOException ioex) {
                             ioex.printStackTrace();
                         } catch (MessagingException mex) {
@@ -195,18 +240,18 @@ public class MailBoxMonitor {
 
             // Check mail once in "freq" MILLIseconds
             int freq = 2000;
-            boolean supportsIdle = false;
-            try {
-                if (folder instanceof IMAPFolder) {
-                    IMAPFolder f = (IMAPFolder)folder;
-                    f.idle();
-                    supportsIdle = true;
-                }
-            } catch (FolderClosedException fex) {
-                throw fex;
-            } catch (MessagingException mex) {
-                supportsIdle = false;
-            }
+            boolean supportsIdle = true;
+//            try {
+//                if (folder instanceof IMAPFolder) {
+//                    IMAPFolder f = (IMAPFolder)folder;
+//                    f.idle();
+//                    supportsIdle = true;
+//                }
+//            } catch (FolderClosedException fex) {
+//                throw fex;
+//            } catch (MessagingException mex) {
+//                supportsIdle = false;
+//            }
             for (;;) {
                 if (supportsIdle && folder instanceof IMAPFolder) {
                     IMAPFolder f = (IMAPFolder)folder;
@@ -217,12 +262,20 @@ public class MailBoxMonitor {
 
                     // This is to force the IMAP server to send us
                     // EXISTS notifications.
-                    folder.getMessageCount();
+//                    folder.getMessageCount();
                 }
             }
-
+// =cz&S52f
         } catch (Exception ex) {
             ex.printStackTrace();
+        }finally {
+            try {
+                if(folder!=null)
+                folder.close(true);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+
         }
     }
 }

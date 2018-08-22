@@ -166,7 +166,7 @@ public class InvoiceController {
 
         invoiceService.saveInvoices(drafts);
         // 导入 Xero
-//        XeroUtil.createInvoices(drafts);
+        XeroUtil.createInvoices(drafts);
         return "{'status':'ok'}";
     }
 }

@@ -19,6 +19,17 @@ import java.util.List;
 
 public class XeroUtil {
 
+
+
+//    {
+//        "AppType" : "PRIVATE",
+//            "UserAgent": "SodiConnection-CDPB2R",
+//            "ConsumerKey" : "FJSDAUTSFVRDZPNJKZUN6QJGXE4NDA",
+//            "ConsumerSecret" : "MXZU5DUE9RBSN6UEYI38JBBPGWCBTL",
+//            "PrivateKeyCert" :  "certs/public_privatekey.pfx",
+//            "PrivateKeyPassword" :  "YourKeyPasssword"
+//    }
+
     static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
     static XeroClient client;
     static
@@ -33,6 +44,7 @@ public class XeroUtil {
             e.printStackTrace();
         }
     }
+
     public static void createInvoices(List<net.oliver.sodi.model.Invoice> sodiInvoices) {
         try {
             List<Invoice> ins = new ArrayList<Invoice>();

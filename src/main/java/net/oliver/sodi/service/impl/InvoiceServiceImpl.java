@@ -16,7 +16,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
 
     @Override
     public void save(Invoice invoice) {
-        Invoice invoice_copy = dao.save(invoice);
+        dao.save(invoice);
     }
 
     @Override
