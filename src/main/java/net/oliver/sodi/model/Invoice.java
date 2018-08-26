@@ -1,5 +1,6 @@
 package net.oliver.sodi.model;
 
+import net.oliver.sodi.util.MathUtil;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,6 +13,7 @@ public class Invoice {
     @Indexed
     private int id;  //自定义id
     private String contactName;
+    private String contactPerson;
     private String emailAddress;
     private String POAddressLine1;
     private String POAddressLine2;
@@ -26,9 +28,63 @@ public class Invoice {
     private String orderNumber;
     private String InvoiceDate;
     private String DueDate;
-    private int status;/* 0 draft 1 approved 2 imported*/
+    private int status;/* 0 draft 1 approved 2 imported 3 sent to client*/
     private List<InvoiceItem> items = new ArrayList<InvoiceItem>();
     private double totalamount;
+    private String customerNote;
+    private double subtotal;
+    private double gst;
+    private String orderNote;
+
+    public String getOrderNote() {
+        return orderNote;
+    }
+
+    public void setOrderNote(String orderNote) {
+        this.orderNote = orderNote;
+    }
+
+    public void reCalculate(){
+        this.totalamount =0;
+        for(InvoiceItem item : this.items)
+        {
+            this.totalamount += item.getTotalamount();
+        }
+        this.totalamount = MathUtil.trimDouble(this.totalamount);
+        this.gst = MathUtil.trimDouble(this.totalamount*0.1);
+        this.subtotal = MathUtil.trimDouble(this.totalamount + this.gst);
+    }
+    public double getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public double getGst() {
+        return gst;
+    }
+
+    public void setGst(double gst) {
+        this.gst = gst;
+    }
+
+    public String getCustomerNote() {
+        return customerNote;
+    }
+
+    public void setCustomerNote(String customerNote) {
+        this.customerNote = customerNote;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
+    }
 
     public double getTotalamount() {
         return totalamount;
@@ -39,12 +95,13 @@ public class Invoice {
     }
     public void addTotalAmount(double amount)
     {
-        this.totalamount +=amount;
+        this.totalamount =MathUtil.trimDouble(this.totalamount +amount);
+//        reCalculate();
     }
 
     public void addItem(InvoiceItem item){
         this.items.add(item);
-        this.addTotalAmount(item.getTotalamount());
+//        this.addTotalAmount(item.getTotalamount());
     }
 
     public String getEmailAddress() {

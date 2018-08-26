@@ -50,6 +50,7 @@ public class XeroUtil {
             List<Invoice> ins = new ArrayList<Invoice>();
             for(net.oliver.sodi.model.Invoice sodiInvoice : sodiInvoices ) {
                 Invoice in = new Invoice();
+                in.getLineAmountTypes().add("Exclusive");
                 in.setType(InvoiceType.ACCREC);
                 in.setDate(dateFormat.parse(sodiInvoice.getInvoiceDate()));
                 List<LineItem> items = new ArrayList<LineItem>();
@@ -67,7 +68,7 @@ public class XeroUtil {
                 }
                 in.setLineItems(items);
                 Contact contact = new Contact();
-                contact.setName("Martin Hudson");
+                contact.setName(sodiInvoice.getContactName());
                 in.setContact(contact);
                 in.setInvoiceNumber(sodiInvoice.getInvoiceNumber());
                 in.setReference(sodiInvoice.getInvoiceNumber());

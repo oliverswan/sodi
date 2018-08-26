@@ -15,9 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping(value = "/api/invoices")
@@ -38,6 +36,13 @@ public class InvoiceController {
     @ResponseBody
     public String addInvoice(@RequestBody Invoice invoice)  {
         invoice.setId(sequence.getNextSequence("invoice"));
+        invoiceService.save(invoice);
+        return "{'status':'ok'}";
+    }
+
+    @RequestMapping(value = { "/update" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String updateInvoice(@RequestBody Invoice invoice)  {
         invoiceService.save(invoice);
         return "{'status':'ok'}";
     }
@@ -97,12 +102,11 @@ public class InvoiceController {
     }
 
     @PostMapping(value = "/approveall2",consumes="text/plain")
+    @ResponseBody
     public String approveallDraft2(@RequestBody(required = false) String body )  {
         List<Invoice> drafts = invoiceService.findDraft();
         List<Item> inventoryItems = new ArrayList<Item>();
-
-
-        Map<String,String> map = new HashMap<String,String>();
+        /*Map<String,String> map = new HashMap<String,String>();
         if(!StringUtils.isBlank(body))
         {
             String[] mapping = body.split(",");
@@ -111,19 +115,19 @@ public class InvoiceController {
                 String[] ary = str.split("@");
                 map.put(ary[0],ary[1]);
             }
-        }
+        }*/
 
         for(Invoice invoice:drafts)
         {
             // invoice number
             invoice.setStatus(1);
-            if(map.containsKey(invoice.getReference()))
+            /*if(map.containsKey(invoice.getReference()))
                 invoice.setInvoiceNumber(map.get(invoice.getReference()));
-            else
-                invoice.setInvoiceNumber(invoice.getReference());
+            else*/
 
             // 更新库存
             // 查找backOrder
+            StringBuffer osb = new StringBuffer();
             for(InvoiceItem iitem : invoice.getItems())
             {
                 if(iitem.getInventoryItemCode().equals("SHIP"))
@@ -138,10 +142,12 @@ public class InvoiceController {
                 int sold = item.getSoldThisYear()+quantity;// 今年卖出的最新值
                 int stock = item.getStock() -quantity;// 本次销售后，剩余库存
                 int needmore = 0;
-                if(stock < 1 )
+
+                if(stock < 0 )
                 {
                     if(StringUtils.isBlank(bo.getInvoiceNumber())){
                         bo.setId(sequence.getNextSequence("backorder"));
+                        bo.setCustomName(invoice.getContactName());
                         bo.setInvoiceNumber(invoice.getInvoiceNumber());
                     }
                     if(item.getStock()>0)
@@ -150,15 +156,26 @@ public class InvoiceController {
                     }else{
                          needmore = quantity;
                     }
+                    osb.append(needmore+" x "+item.getCode()).append(",");
+
                     bo.addItem(item.getCode(),needmore);
                     item.setStock(0);
+                    iitem.setQuantity(iitem.getQuantity() - needmore);
                 }else{
-                    item.setStock(stock);
+
+                    item.setStock(stock); // 更新售出后的库存
                 }
                 item.setSoldThisYear(sold);
                 inventoryItems.add(item);
+
                 if(!StringUtils.isBlank(bo.getInvoiceNumber()))
-                 backorderService.save(bo);
+                {
+                    backorderService.save(bo);
+//                    osb.append(" on back order.");
+                    invoice.setOrderNote(osb.toString());
+                }
+
+                invoice.reCalculate();
             }
 
             itemService.save(inventoryItems);

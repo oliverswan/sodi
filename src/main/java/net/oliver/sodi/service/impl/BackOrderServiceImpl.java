@@ -1,15 +1,13 @@
 package net.oliver.sodi.service.impl;
 
 import net.oliver.sodi.dao.IBackOrderDao;
+import net.oliver.sodi.model.BackOrderReportEntry;
 import net.oliver.sodi.model.Backorder;
 import net.oliver.sodi.service.IBackorderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class BackOrderServiceImpl implements IBackorderService {
@@ -33,28 +31,40 @@ public class BackOrderServiceImpl implements IBackorderService {
     }
 
     @Override
-    public Map<String, Integer> report() {
-        Map<String, Integer> result = new HashMap<String, Integer>();
+    public List<BackOrderReportEntry> report() {
+        Map<String,BackOrderReportEntry> temp = new HashMap<String,BackOrderReportEntry>();
         List<Backorder> orders = dao.findAll();
         for(Backorder order : orders)
         {
             for(Iterator iter = order.getOrders().entrySet().iterator();iter.hasNext();)
             {
+
                 Map.Entry<String, Integer> entry = (Map.Entry<String, Integer>) iter.next();
-                if(result.containsKey(entry.getKey()))
+                String itemCode = entry.getKey();
+                BackOrderReportEntry t;
+                if(temp.containsKey(itemCode))
                 {
-                    result.put(entry.getKey(),result.get(entry.getKey())+entry.getValue());
-                }else
-                {
-                    result.put(entry.getKey(),entry.getValue());
+                     t = temp.get(itemCode);
+                }else{
+                     t = new BackOrderReportEntry();
+                    t.setItemCode(itemCode);
+                    temp.put(itemCode,t);
                 }
+                t.addToTal(entry.getValue());
+                t.addDistributeForCustomer(order.getCustomName(),entry.getValue());
             }
         }
-        return result;
+        Collection<BackOrderReportEntry> valueCollection = temp.values();
+        return new ArrayList<BackOrderReportEntry>(valueCollection);
     }
 
     @Override
     public List<Backorder> findByInvoiceNumber(String invoice_number) {
         return dao.findByInvoiceNumber(invoice_number);
+    }
+
+    @Override
+    public Backorder findById(int id) {
+        return dao.findOne(id);
     }
 }

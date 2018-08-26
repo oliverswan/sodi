@@ -1,5 +1,6 @@
 package net.oliver.sodi.model;
 
+import net.oliver.sodi.util.MathUtil;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
@@ -22,6 +23,31 @@ public class InvoiceItem {
     private String product_subtotal_discount;
     private String product_quantity;
     private double totalamount;
+    private double subtotal;
+    private double gst;
+
+    public void reCalculate()
+    {
+        this.totalamount = MathUtil.trimDouble(this.Quantity * this.UnitAmount);
+        this.gst = MathUtil.trimDouble(this.totalamount * 0.1);
+        this.subtotal = MathUtil.trimDouble(this.totalamount * 1.1);
+    }
+
+    public double getGst() {
+        return gst;
+    }
+
+    public void setGst(double gst) {
+        this.gst = gst;
+    }
+
+    public double getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
+    }
 
     public double getTotalamount() {
         return totalamount;
@@ -53,6 +79,7 @@ public class InvoiceItem {
 
     public void setQuantity(int quantity) {
         Quantity = quantity;
+        reCalculate();
     }
 
     public double getUnitAmount() {
@@ -61,6 +88,7 @@ public class InvoiceItem {
 
     public void setUnitAmount(double unitAmount) {
         UnitAmount = unitAmount;
+        reCalculate();
     }
 
     public String getDiscount() {

@@ -15,7 +15,7 @@ public class Backorder {
     private int id;  //自定义id
 
     private String invoiceNumber;
-
+    private String customName;
     private Map<String,Integer> orders = new HashMap<String,Integer>();
     private int status;/* 0 not complete 1 complete*/
 
@@ -59,5 +59,13 @@ public class Backorder {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getCustomName() {
+        return customName;
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
     }
 }

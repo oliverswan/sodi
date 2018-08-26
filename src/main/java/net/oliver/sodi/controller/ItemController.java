@@ -47,6 +47,14 @@ public class ItemController {
         return service.findByCode(code);
     }
 
+
+    @GetMapping("/query/{criteria}")
+    @ResponseBody
+    public List<Item> autoComplete(@PathVariable String criteria )  {
+
+        return service.findItemAutoComplete(criteria);
+    }
+
     @RequestMapping(value = { "/save" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
     @ResponseBody
     public String addInvoices(@RequestBody Item item)  {

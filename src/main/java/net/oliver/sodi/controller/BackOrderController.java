@@ -29,18 +29,23 @@ public class BackOrderController {
 //        return service.findNotCompleted();
     }
 
-    @GetMapping("/complete/{invoice_number}")
+    @GetMapping("/complete/{id}")
     @ResponseBody
-    public String getItem(@PathVariable String invoice_number )  {
+    public String getItem(@PathVariable int id )  {
 
-        List<Backorder> result = service.findByInvoiceNumber(invoice_number);
-        if(result.size()>0)
+        Backorder result = service.findById(id);
+        if(result!=null)
         {
-            Backorder order =result.get(0);
-            order.setStatus(1);
-            service.save(order);
+            result.setStatus(1);
+            service.save(result);
         }
         return "ok";
     }
 
+    @RequestMapping(value = { "/update" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String update(@RequestBody Backorder bo)  {
+        service.save(bo);
+        return "{'status':'ok'}";
+    }
 }

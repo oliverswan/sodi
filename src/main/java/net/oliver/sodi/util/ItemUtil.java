@@ -25,9 +25,28 @@ public class ItemUtil {
         if(l.size()>0)
         {
             Item item = l.get(0);
+//            item.setDescription(strArr[15]);
+//            item.setUnitAmount(Double.parseDouble(strArr[17]));
+//            item.setDiscount(strArr[18]);
+//            item.setAccountCode(strArr[19]);
+//            item.setTrackingName1(strArr[21]);
+//            item.setTrackingOption1(strArr[22]);
+//            item.setTrackingName2(strArr[23]);
+//            item.setTrackingOption2(strArr[24]);
+//            item.setCurrency(strArr[25]);
+//            item.setBrandingTheme(strArr[26]);
+//            item.setProduct_attribute(strArr[27]);
+//            item.setProduct_subtotal_discount(strArr[28]);
+//            item.setProduct_quantity(strArr[29]);
+//            item.setTotalamount(MathUtil.trimDouble(item.getQuantity() * item.getUnitAmount() * 1.1));
+
+
             target.setDescription(item.getName());
             target.setUnitAmount(item.getPrice());
-            target.setTotalamount(target.getQuantity()*target.getUnitAmount());
+            target.setTaxType("GST on Income");
+
+//            target.setTotalamount(target.getQuantity()*target.getUnitAmount());
+            //TODO 設置ACCOUNTCODE
             target.setAccountCode("4000");
         }
     }

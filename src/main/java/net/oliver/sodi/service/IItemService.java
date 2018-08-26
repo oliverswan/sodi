@@ -11,4 +11,5 @@ public interface IItemService {
     List<Item> findByCode(String code);
     void save(List<Item> list);
     List<Item> findAllForReorder(int month);
+    List<Item> findItemAutoComplete(String code);
 }

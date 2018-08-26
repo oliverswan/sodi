@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class ItemSericeImpl implements IItemService {
@@ -50,5 +51,14 @@ public class ItemSericeImpl implements IItemService {
         return mongoTemplate.find(query,Item.class);
     }
 
+    @Override
+    public List<Item> findItemAutoComplete(String criteria) {
 
+
+        Pattern pattern = Pattern.compile("^.*"+criteria+".*$", Pattern.CASE_INSENSITIVE);
+        Criteria c1 = Criteria.where("code").regex(pattern);
+        Criteria c2 = Criteria.where("name").regex(pattern);
+        Query query = new Query(new Criteria().orOperator(c1,c2));
+        return mongoTemplate.find(query,Item.class);
+    }
 }

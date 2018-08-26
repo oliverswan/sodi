@@ -13,4 +13,6 @@ public interface IInvoiceService {
     List<Invoice> findAll();
 
     List<Invoice> findDraft();
+
+    Invoice findById(int id);
 }

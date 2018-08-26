@@ -32,7 +32,6 @@ package net.oliver.sodi.mail;
  */
 
 import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.IMAPMessage;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.util.JsoupUtil;
@@ -68,11 +67,14 @@ public class MailBoxMonitor {
 
     final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
 
-//    IMAPFolder folder;
-
     public void getContent(Message message) throws MessagingException, IOException
     {
-//        String body = "";
+        String subject = message.getSubject();
+        if(subject.indexOf("New Order")<0)
+        {
+            return;
+        }
+
         String from = "";
         ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
         String contentType = message.getContentType();
@@ -213,7 +215,6 @@ public class MailBoxMonitor {
 
 
             folder.open(Folder.READ_WRITE);
-            // Add messageCountListener to listen for new messages
             folder.addMessageCountListener(new MessageCountAdapter() {
                 @Override
                 public void messagesAdded(MessageCountEvent ev) {
@@ -224,7 +225,7 @@ public class MailBoxMonitor {
                             if(updateLastSeenUID(msgs[i].getMessageNumber()))
                             {
                                 getContent(msgs[i]);
-                                System.out.println("Process done!!!");
+                                System.out.println("Process Mail done!!!");
                             }else{
                                 System.out.println("Ignore one message..");
                             }

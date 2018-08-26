@@ -20,13 +20,12 @@ public class SodiApplicationListener implements ApplicationListener<ContextRefre
 
         MailBoxMonitor monitor = applicationContext.getBean(MailBoxMonitor.class);
 
-            Thread thread = new Thread(new Runnable() {
+       Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-//                    MailBoxMonitor monitor = new MailBoxMonitor();
                     monitor.start();
                 }
             });
-            thread.start();
+       thread.start();
     }
 }

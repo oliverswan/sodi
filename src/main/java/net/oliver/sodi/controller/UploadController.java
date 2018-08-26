@@ -1,6 +1,7 @@
 package net.oliver.sodi.controller;
 
 import com.opencsv.CSVReader;
+import net.oliver.sodi.config.Const;
 import net.oliver.sodi.dao.IInvoiceDao;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.model.InvoiceItem;
@@ -76,7 +77,8 @@ public class UploadController {
                         invoice.setPORegion(strArr[7]);
                         invoice.setPOPostalCode(strArr[8]);
                         invoice.setPOCountry(strArr[9]);
-                        invoice.setInvoiceNumber(strArr[10]);
+
+                        invoice.setInvoiceNumber(Const.InvoiceNumerPrefix+sequence.getNextSequence("invoiceNumber"));//strArr[10]
                         invoice.setReference(strArr[11]);
                         invoice.setInvoiceDate(strArr[12]);
                         invoice.setDueDate(strArr[13]);
