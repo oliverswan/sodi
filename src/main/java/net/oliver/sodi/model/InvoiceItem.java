@@ -3,13 +3,15 @@ package net.oliver.sodi.model;
 import net.oliver.sodi.util.MathUtil;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
+
 @Document
 public class InvoiceItem {
 
     private String InventoryItemCode;
     private String Description;
     private int Quantity;
-    private double UnitAmount;
+    private BigDecimal UnitAmount;
     private String Discount;
     private String AccountCode;
     private String TaxType;
@@ -22,38 +24,73 @@ public class InvoiceItem {
     private String product_attribute;
     private String product_subtotal_discount;
     private String product_quantity;
-    private double totalamount;
-    private double subtotal;
-    private double gst;
+    private BigDecimal totalamount;
+    private BigDecimal subtotal;
+    private BigDecimal gst;
+    private String totalamounts;
+    private String subtotals;
+    private String gsts;
+
+    public void setUnitAmount(BigDecimal unitAmount) {
+        UnitAmount = unitAmount;
+    }
+
+    public String getTotalamounts() {
+        return totalamounts;
+    }
+
+    public void setTotalamounts(String totalamounts) {
+        this.totalamounts = totalamounts;
+    }
+
+    public String getSubtotals() {
+        return subtotals;
+    }
+
+    public void setSubtotals(String subtotals) {
+        this.subtotals = subtotals;
+    }
+
+    public String getGsts() {
+        return gsts;
+    }
+
+    public void setGsts(String gsts) {
+        this.gsts = gsts;
+    }
 
     public void reCalculate()
     {
-        this.totalamount = MathUtil.trimDouble(this.Quantity * this.UnitAmount);
-        this.gst = MathUtil.trimDouble(this.totalamount * 0.1);
-        this.subtotal = MathUtil.trimDouble(this.totalamount * 1.1);
+        this.totalamount = this.UnitAmount.multiply(new BigDecimal(this.Quantity));
+        this.gst = this.totalamount.multiply(new BigDecimal("0.1"));
+        this.subtotal =this.totalamount.add(this.gst);
+
+        this.totalamounts = MathUtil.df.format(this.totalamount);
+        this.gsts = MathUtil.df.format(this.gst);
+        this.subtotals = MathUtil.df.format(this.subtotal);
     }
 
-    public double getGst() {
+    public BigDecimal getGst() {
         return gst;
     }
 
-    public void setGst(double gst) {
+    public void setGst(BigDecimal gst) {
         this.gst = gst;
     }
 
-    public double getSubtotal() {
+    public BigDecimal getSubtotal() {
         return subtotal;
     }
 
-    public void setSubtotal(double subtotal) {
+    public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
     }
 
-    public double getTotalamount() {
+    public BigDecimal getTotalamount() {
         return totalamount;
     }
 
-    public void setTotalamount(double totalamount) {
+    public void setTotalamount(BigDecimal totalamount) {
         this.totalamount = totalamount;
     }
 
@@ -79,16 +116,14 @@ public class InvoiceItem {
 
     public void setQuantity(int quantity) {
         Quantity = quantity;
-        reCalculate();
     }
 
-    public double getUnitAmount() {
+    public BigDecimal getUnitAmount() {
         return UnitAmount;
     }
 
     public void setUnitAmount(double unitAmount) {
-        UnitAmount = unitAmount;
-        reCalculate();
+        UnitAmount = new BigDecimal(unitAmount);
     }
 
     public String getDiscount() {

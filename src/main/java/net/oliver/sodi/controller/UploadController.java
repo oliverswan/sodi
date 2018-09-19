@@ -6,7 +6,6 @@ import net.oliver.sodi.dao.IInvoiceDao;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.model.InvoiceItem;
 import net.oliver.sodi.service.IBackorderService;
-import net.oliver.sodi.util.MathUtil;
 import net.oliver.sodi.util.MongoAutoidUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -115,7 +115,8 @@ public class UploadController {
                     item.setProduct_attribute(strArr[27]);
                     item.setProduct_subtotal_discount(strArr[28]);
                     item.setProduct_quantity(strArr[29]);
-                    item.setTotalamount(MathUtil.trimDouble(item.getQuantity() * item.getUnitAmount() * 1.1));
+                    item.setTotalamount(item.getUnitAmount().multiply(new BigDecimal(item.getQuantity() )).multiply(new BigDecimal(1.1)));
+                    item.reCalculate();
                     invoice.addItem(item);
                 }
             }

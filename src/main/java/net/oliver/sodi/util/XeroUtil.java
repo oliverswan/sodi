@@ -8,6 +8,8 @@ import com.connectifier.xeroclient.models.LineItem;
 import com.xero.api.Config;
 import com.xero.api.JsonConfig;
 import net.oliver.sodi.model.InvoiceItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -32,6 +34,7 @@ public class XeroUtil {
 
     static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
     static XeroClient client;
+    static final Logger logger = LoggerFactory.getLogger(XeroUtil.class);
     static
     {
         try {
@@ -57,13 +60,13 @@ public class XeroUtil {
                 for (InvoiceItem sodiItem : sodiInvoice.getItems()) {
                     LineItem item = new LineItem();
                     item.setItemCode(sodiItem.getInventoryItemCode());
-                    item.setUnitAmount(new BigDecimal(sodiItem.getUnitAmount()));
+                    item.setUnitAmount(sodiItem.getUnitAmount());
                     item.setQuantity(new BigDecimal(sodiItem.getQuantity()));
                     item.setDescription(sodiItem.getDescription());
                     item.setTaxType("OUTPUT");//这里使用内部代码而非显示内容，澳大利亚的是GST 10%
 //                    item.setTaxAmount(new BigDecimal(sodiItem.getUnitAmount()*sodiItem.getQuantity()*0.1));
                     item.setAccountCode(sodiItem.getAccountCode());
-                    item.setLineAmount(new BigDecimal(sodiItem.getUnitAmount()*sodiItem.getQuantity()));
+                    item.setLineAmount(sodiItem.getUnitAmount().multiply(new BigDecimal(sodiItem.getQuantity())));
                     items.add(item);
                 }
                 in.setLineItems(items);
@@ -77,6 +80,7 @@ public class XeroUtil {
             List rr = client.createInvoices(ins);
         }catch (Exception e)
         {
+            logger.error("Import to xero exception.."+e.getMessage());
             e.printStackTrace();
         }
 

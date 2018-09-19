@@ -4,6 +4,7 @@ import net.oliver.sodi.util.MathUtil;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +31,56 @@ public class Invoice {
     private String DueDate;
     private int status;/* 0 draft 1 approved 2 imported 3 sent to client*/
     private List<InvoiceItem> items = new ArrayList<InvoiceItem>();
-    private double totalamount;
+    private BigDecimal totalamount;
     private String customerNote;
-    private double subtotal;
-    private double gst;
+    private BigDecimal subtotal;
+    private BigDecimal gst;
     private String orderNote;
+    private String moblie;
+    private String tel;
+    private String subtotals;
+    private String gsts;
+    private String totalamounts;
+
+    public String getSubtotals() {
+        return subtotals;
+    }
+
+    public void setSubtotals(String subtotals) {
+        this.subtotals = subtotals;
+    }
+
+    public String getGsts() {
+        return gsts;
+    }
+
+    public void setGsts(String gsts) {
+        this.gsts = gsts;
+    }
+
+    public String getTotalamounts() {
+        return totalamounts;
+    }
+
+    public void setTotalamounts(String totalamounts) {
+        this.totalamounts = totalamounts;
+    }
+
+    public String getMoblie() {
+        return moblie;
+    }
+
+    public void setMoblie(String moblie) {
+        this.moblie = moblie;
+    }
+
+    public String getTel() {
+        return tel;
+    }
+
+    public void setTel(String tel) {
+        this.tel = tel;
+    }
 
     public String getOrderNote() {
         return orderNote;
@@ -45,28 +91,33 @@ public class Invoice {
     }
 
     public void reCalculate(){
-        this.totalamount =0;
+        this.totalamount = new BigDecimal("0.00");
         for(InvoiceItem item : this.items)
         {
-            this.totalamount += item.getTotalamount();
+            this.totalamount = this.totalamount.add(item.getTotalamount());
         }
-        this.totalamount = MathUtil.trimDouble(this.totalamount);
-        this.gst = MathUtil.trimDouble(this.totalamount*0.1);
-        this.subtotal = MathUtil.trimDouble(this.totalamount + this.gst);
+        this.totalamount =  this.totalamount.setScale(2,   BigDecimal.ROUND_HALF_UP);
+        this.totalamounts = MathUtil.df.format(this.totalamount);
+
+        this.gst = this.totalamount.multiply(new BigDecimal("0.1"));
+        this.gsts =  MathUtil.df.format(this.gst);
+
+        this.subtotal = this.totalamount.add(this.gst);
+        this.subtotals = MathUtil.df.format(this.subtotal);
     }
-    public double getSubtotal() {
+    public BigDecimal getSubtotal() {
         return subtotal;
     }
 
-    public void setSubtotal(double subtotal) {
+    public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
     }
 
-    public double getGst() {
+    public BigDecimal getGst() {
         return gst;
     }
 
-    public void setGst(double gst) {
+    public void setGst(BigDecimal gst) {
         this.gst = gst;
     }
 
@@ -86,22 +137,17 @@ public class Invoice {
         this.contactPerson = contactPerson;
     }
 
-    public double getTotalamount() {
+    public BigDecimal getTotalamount() {
         return totalamount;
     }
 
-    public void setTotalamount(double totalamount) {
+    public void setTotalamount(BigDecimal totalamount) {
         this.totalamount = totalamount;
     }
-    public void addTotalAmount(double amount)
-    {
-        this.totalamount =MathUtil.trimDouble(this.totalamount +amount);
-//        reCalculate();
-    }
+
 
     public void addItem(InvoiceItem item){
         this.items.add(item);
-//        this.addTotalAmount(item.getTotalamount());
     }
 
     public String getEmailAddress() {

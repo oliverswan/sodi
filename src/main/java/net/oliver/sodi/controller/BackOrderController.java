@@ -3,11 +3,15 @@ package net.oliver.sodi.controller;
 import net.oliver.sodi.model.BackOrderResult;
 import net.oliver.sodi.model.Backorder;
 import net.oliver.sodi.service.IBackorderService;
+import net.oliver.sodi.util.MongoAutoidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping(value = "/api/backorders")
@@ -15,6 +19,12 @@ public class BackOrderController {
 
     @Autowired
     IBackorderService service;
+
+    @Autowired
+    MongoAutoidUtil sequence;
+
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     @GetMapping("")
     @ResponseBody
@@ -46,6 +56,31 @@ public class BackOrderController {
     @ResponseBody
     public String update(@RequestBody Backorder bo)  {
         service.save(bo);
+        return "{'status':'ok'}";
+    }
+
+
+    @GetMapping("/addItem")
+    public String save(String invoiceNumber,String customerName,String code,int quantity)  {
+//        bo.setId(sequence.getNextSequence("backorder"));
+//        service.save(bo);
+
+        List<Backorder> list = service.findByInvoiceNumber(invoiceNumber);
+        if(list.size()>0)
+        {
+            Backorder exitBo = list.get(0);
+            exitBo.addItem(code,quantity);
+            service.save(exitBo);
+        }else{
+            Backorder newBO = new Backorder();
+            newBO.setId(sequence.getNextSequence("backorder"));
+            newBO.setInvoiceNumber(invoiceNumber);
+            newBO.setCustomName(customerName);
+            Map orders = new HashMap();
+            orders.put(code,quantity);
+            newBO.setOrders(orders);
+            service.save(newBO);
+        }
         return "{'status':'ok'}";
     }
 }

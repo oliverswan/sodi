@@ -20,6 +20,13 @@ public class ContactController {
     @Autowired
     IContactService service;
 
+
+    @GetMapping("/query/{criteria}")
+    @ResponseBody
+    public List<Contact> autoComplete(@PathVariable String criteria )  {
+        return service.findContactAutoComplete(criteria);
+    }
+
     @GetMapping("")
     @ResponseBody
     public ContactResult getAll(@RequestParam int echo)  {

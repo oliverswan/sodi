@@ -12,4 +12,6 @@ public interface IItemService {
     void save(List<Item> list);
     List<Item> findAllForReorder(int month);
     List<Item> findItemAutoComplete(String code);
+    List<Item> findAllOrderBySoldThisYear();
+    List<Item> findBySoldThisYear(int number);
 }

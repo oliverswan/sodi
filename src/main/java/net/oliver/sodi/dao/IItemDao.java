@@ -9,7 +9,8 @@ import java.util.List;
 public interface IItemDao extends MongoRepository<Item, Integer> {
 
     List<Item> findByCode(String code);
-
+    List<Item> findAllOrderBySoldThisYear();
+    List<Item> findBySoldThisYear(int number);
 //    @Query("{ 'name':{'$regex':?2,'$options':'i'}, sales': {'$gte':?1,'$lte':?2}}")
 //    public Page<Item> findByCodeAndAgeRange(String name, double ageFrom, double ageTo, Pageable page);
 

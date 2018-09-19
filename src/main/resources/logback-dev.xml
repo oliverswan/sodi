@@ -5,12 +5,11 @@
     <!-- <property name="LOG_HOME" value="D:/data/logs" /> -->
 
     <!-- 应用名称：和统一配置中的项目代码保持一致（小写） -->
-    <property name="APP_NAME" value="ocean_logs" />
+    <property name="APP_NAME" value="sodi_logs" />
     <!--日志文件保留天数 -->
     <property name="LOG_MAX_HISTORY" value="30" />
     <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径 -->
     <!--应用日志文件保存路径 -->
-    <property name="LOG_APP_HOME" value="${APP_NAME}/app" />
     <property name="log.error.log.level" value="WARN" />
 
     <!--=========================== 按照每天生成日志文件：默认配置=================================== -->
@@ -25,7 +24,20 @@
     <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!--日志文件输出的文件名 -->
-            <FileNamePattern>${LOG_APP_HOME}/sodi_platfrom.%d{yyyy-MM-dd}.log
+            <FileNamePattern>${APP_NAME}/sodi_platfrom.%d{yyyy-MM-dd}.log
+            </FileNamePattern>
+            <!--日志文件保留天数 -->
+            <MaxHistory>${LOG_MAX_HISTORY}</MaxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{500} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Email" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名 -->
+            <FileNamePattern>${APP_NAME}/sodi_mail.%d{yyyy-MM-dd}.log
             </FileNamePattern>
             <!--日志文件保留天数 -->
             <MaxHistory>${LOG_MAX_HISTORY}</MaxHistory>
@@ -40,7 +52,7 @@
             <level>${log.error.log.level}</level>
         </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_APP_HOME}/sodi_platfrom-error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${APP_NAME}/sodi_platfrom-error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>${LOG_MAX_HISTORY}</maxHistory>
         </rollingPolicy>
         <encoder charset="${log.charset}">
@@ -54,6 +66,11 @@
 
     <logger name="net.oliver">
         <level value="debug" />
+    </logger>
+
+    <logger name="net.oliver.sodi.mail.MailBoxMonitor">
+        <level value="debug" />
+        <appender-ref ref="Email" />
     </logger>
 
     <root level="INFO">

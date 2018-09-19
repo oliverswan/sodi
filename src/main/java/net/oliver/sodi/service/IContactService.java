@@ -9,4 +9,5 @@ public interface IContactService {
     public void save(Contact contact);
     public List<Contact> findAll();
     public List<Contact> findByContactName(String name );
+    List<Contact> findContactAutoComplete(String criteria);
 }

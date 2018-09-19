@@ -44,10 +44,12 @@ public class ItemUtil {
             target.setDescription(item.getName());
             target.setUnitAmount(item.getPrice());
             target.setTaxType("GST on Income");
-
 //            target.setTotalamount(target.getQuantity()*target.getUnitAmount());
-            //TODO 設置ACCOUNTCODE
-            target.setAccountCode("4000");
+//            String GL = SodiConfig.getValue("code")==null?"4000":SodiConfig.getValue("code");
+//            target.setAccountCode(GL);
+            // 改为从Item获取
+            target.setAccountCode(item.getAccountCode());
+            target.reCalculate();
         }
     }
 }

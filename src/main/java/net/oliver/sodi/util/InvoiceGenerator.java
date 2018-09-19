@@ -52,9 +52,8 @@ public class InvoiceGenerator {
 			createHeadings(cb, x, y, "Bank deposit details:",10);
 			createText(cb, x, y-10, "Account Name: Australian Karting Promotions P/L",10);
 			createText(cb, x, y-20, "Bank: NAB",10);
-			createText(cb, x, y-30, "20 carrington drive sunshine",10);
-			createText(cb, x, y-40, "BSB: 083-266",10);
-			createText(cb, x, y-50, "Account No: 83-721-7121",10);
+			createText(cb, x, y-30, "BSB: 083-266",10);
+			createText(cb, x, y-40, "Account No: 83-721-7121",10);
 			
 			int wid = 250;
 			createHeadings(cb, x+wid, y , "No Statements issued.",10);
@@ -79,15 +78,71 @@ public class InvoiceGenerator {
 	    }
 	}
 
+	class MyFooter2 extends PdfPageEventHelper {
+		public void onEndPage(PdfWriter writer, Document document) {
+
+			PdfContentByte cb = writer.getDirectContent();
+
+			line(cb, 40, 65,572, 65);
+
+			ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,footer3(),
+					(document.right() - document.left()) / 2 + document.leftMargin(),
+					50, 0);
+
+		}
+		private Phrase footer() {
+			Font ffont = new Font(Font.FontFamily.UNDEFINED, 10, Font.ITALIC);
+			Phrase p = new Phrase("Orders will not be despatched until cleared payment has been received.",ffont);
+			return p;
+		}
+		private Phrase footer2() {
+			Font ffont = new Font(Font.FontFamily.UNDEFINED, 8, Font.ITALIC);
+			Phrase p = new Phrase( "Please email bank deposit confirmation to sales@sodirentalkarts.com.au",ffont);
+			return p;
+		}
+		private Phrase footer3() {
+			Font ffont = new Font(Font.FontFamily.UNDEFINED, 8, Font.ITALIC);
+			Phrase p = new Phrase( "Australian Karting Promotions P/L ABN 21 647 290 743 trading as SodiKart Australasia",ffont);
+			return p;
+		}
+	}
+
+	public void createDelivery(Document doc, PdfWriter writer, Invoice invoice) {
+		doc.open();
+		initializeFonts();
+		try {
+			writer.setPageEvent(new MyFooter2());
+			doc.addAuthor("oliver");
+			doc.addCreationDate();
+			doc.addProducer();
+			doc.addCreator("sodirentalkarts.com.au");
+			doc.addTitle("Delivery Note");
+			doc.setPageSize(PageSize.LETTER);
+			doc.open();
+			PdfContentByte cb = writer.getDirectContent();
+			header(doc, cb);
+			deliveryContent(doc, cb,invoice);
+		}  catch (Exception ex) {
+			ex.printStackTrace();
+		} finally {
+			if (doc != null) {
+				doc.close();
+			}
+			if (writer != null) {
+				writer.close();
+			}
+		}
+	}
+
 	public void createInvoice(Document doc, PdfWriter writer, Invoice invoice) {
 		doc.open();
 		initializeFonts();
 		try {
 			writer.setPageEvent(new MyFooter());
-			doc.addAuthor("betterThanZero");
+			doc.addAuthor("oliver");
 			doc.addCreationDate();
 			doc.addProducer();
-			doc.addCreator("MySampleCode.com");
+			doc.addCreator("sodirentalkarts.com.au");
 			doc.addTitle("Invoice");
 			doc.setPageSize(PageSize.LETTER);
 			doc.open();
@@ -96,10 +151,10 @@ public class InvoiceGenerator {
 			boolean beginPage = true;
 			int y = 0;
 
-			for (int i = 0; i < 1; i++) {
+//			for (int i = 0; i < 1; i++) {
 				if (beginPage) {
 					beginPage = false;
-					generateLayout(doc, cb);
+					header(doc, cb);
 					generateHeader(doc, cb,invoice);
 					y = 615;
 				}
@@ -110,7 +165,7 @@ public class InvoiceGenerator {
 					doc.newPage();
 					beginPage = true;
 				}
-			}
+//			}
 //			printPageNumber(cb);
 
 		}  catch (Exception ex) {
@@ -131,8 +186,8 @@ public class InvoiceGenerator {
 		cb.lineTo(x2,y2);
 		cb.stroke();
 	}
-	
-	private void generateLayout(Document doc, PdfContentByte cb) {
+
+	private void header(Document doc, PdfContentByte cb) {
 
 		try {
 
@@ -142,11 +197,32 @@ public class InvoiceGenerator {
 
 			cb.stroke();
 
-			// add the images
 			Image companyLogo = Image.getInstance("logo.gif");
 			companyLogo.setAbsolutePosition(25, 700);
 			companyLogo.scalePercent(25);
 			doc.add(companyLogo);
+			PdfPTable invoiceMetaDataTable = new PdfPTable(1);
+			invoiceMetaDataTable.getDefaultCell().setBorder(PdfPCell.NO_BORDER);
+			invoiceMetaDataTable.getDefaultCell().setHorizontalAlignment( PdfPCell.ALIGN_RIGHT);
+			Font fontH1 = new Font(bfBold, 12, Font.BOLD);
+			PdfPCell cell =new PdfPCell(new Phrase("SodiKart Australasia",fontH1));
+			cell.setHorizontalAlignment( PdfPCell.ALIGN_RIGHT);
+			cell.setBorder(PdfPCell.NO_BORDER);
+			invoiceMetaDataTable.addCell(cell);
+			invoiceMetaDataTable.addCell("261 Governor Road");
+			invoiceMetaDataTable.addCell("Braeside VIC 3195");   // ���� ����
+			invoiceMetaDataTable.addCell("Tel 0402 84 83 82");
+
+			invoiceMetaDataTable.addCell("Email sales@sodirentalkarts.com.au");
+			invoiceMetaDataTable.addCell("www.sodirentalkarts.com.au");
+			invoiceMetaDataTable.setTotalWidth(250.0f);
+
+			PdfPTable invoiceMetaDataTable0 = new PdfPTable(1);
+			invoiceMetaDataTable0.setTotalWidth(250.0f);
+			invoiceMetaDataTable0.getDefaultCell().setBorder(PdfPCell.NO_BORDER);
+//	          invoiceMetaDataTable0.getDefaultCell().setBorderWidth(1.5f);
+			invoiceMetaDataTable0.addCell(invoiceMetaDataTable);
+			invoiceMetaDataTable0.writeSelectedRows(0, 3, 300, 780, cb);
 
 		}
 
@@ -158,31 +234,79 @@ public class InvoiceGenerator {
 
 	}
 
+	private void deliveryContent(Document doc, PdfContentByte cb,Invoice invoice) {
+
+		try {
+			int leftX = 40;
+			int y = 630;
+			createHeadings(cb, leftX, y, "Shipping Address:",10);
+			createText(cb, leftX, y-10, invoice.getContactName(),10);
+			createText(cb, leftX, y-20, invoice.getContactPerson(),10);
+			createText(cb, leftX, y-30, invoice.getPOAddressLine1(),10);
+			createText(cb, leftX, y-40, invoice.getPOAddressLine2(),10);
+			createText(cb, leftX, y-50, invoice.getPOAddressLine3(),10);
+
+			int x = 300;
+
+
+			int invnY = 550;
+			createText(cb, leftX, invnY+20, invoice.getMoblie(),10);
+			createText(cb, leftX+400, invnY+20, invoice.getTel(),10);
+			createHeadings(cb, leftX, invnY, "DELIVERY NOTE"+invoice.getInvoiceNumber(),14);
+
+//			Invoice date: 20/08/2018
+//			Payment type: Bank Deposit
+			createText(cb, x+100, invnY, "Date:    "+invoice.getInvoiceDate(),10);
+
+//			Qty. Part No. Product Unit Price Total GST Subtotal
+
+			line(cb,leftX,490,560,490);
+
+//			createText(cb, 40, invnY-50, "Qty.       Part No.                       Product                                                      Unit Price        Total        GST        Subtotal",10);
+
+			createText(cb, leftX, invnY-40,"Qty.",10);
+			createText(cb, leftX+40, invnY-40,"SKU",10);
+			createText(cb, leftX+110, invnY-40,"Product Name",10);
+
+
+
+			int currentheight = invnY-50-20;
+			for(InvoiceItem item : invoice.getItems())
+			{
+				currentheight -= 15;
+				addItem2(cb,String.valueOf(item.getQuantity()),
+						item.getInventoryItemCode(),
+						item.getDescription(),
+						String.valueOf(item.getUnitAmount()),
+						String.valueOf(item.getTotalamount()),String.valueOf(item.getGst()),"$"+String.valueOf(item.getSubtotal()),currentheight);
+			}
+			int customNoteY= currentheight-50;
+			if(currentheight-50<400)
+			{
+				customNoteY = currentheight;
+			}
+			createHeadings(cb, leftX, customNoteY,"Custom Note:",10);
+			createText(cb,leftX+30,customNoteY,invoice.getCustomerNote(),8);
+
+
+			if(!StringUtils.isBlank(invoice.getOrderNote()))
+			{
+				String[] arty = invoice.getOrderNote().split(",");
+				for(int i =0;i<arty.length;i++)
+				{
+					createText(cb,leftX,currentheight-60-10*i,arty[i],8);
+				}
+				createText(cb,leftX,currentheight-60-10*arty.length,"On back order.",8);
+			}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
 	private void generateHeader(Document doc, PdfContentByte cb,Invoice invoice) {
 
 		try {
-			  PdfPTable invoiceMetaDataTable = new PdfPTable(1);
-	          invoiceMetaDataTable.getDefaultCell().setBorder(PdfPCell.NO_BORDER);  
-	          invoiceMetaDataTable.getDefaultCell().setHorizontalAlignment( PdfPCell.ALIGN_RIGHT);
-	          Font fontH1 = new Font(bfBold, 12, Font.BOLD);
-	          PdfPCell cell =new PdfPCell(new Phrase("SodiKart Australasia",fontH1));
-	          cell.setHorizontalAlignment( PdfPCell.ALIGN_RIGHT);
-	          cell.setBorder(PdfPCell.NO_BORDER); 
-	          invoiceMetaDataTable.addCell(cell);  
-	          invoiceMetaDataTable.addCell("261 Governor Road");  
-	          invoiceMetaDataTable.addCell("Braeside VIC 3195");   // ���� ����
-	          invoiceMetaDataTable.addCell("Tel 0402 84 83 82");  
-	          
-	          invoiceMetaDataTable.addCell("Email sales@sodirentalkarts.com.au");  
-	          invoiceMetaDataTable.addCell("www.sodirentalkarts.com.au");  
-	          invoiceMetaDataTable.setTotalWidth(250.0f);  
-	            
-	          PdfPTable invoiceMetaDataTable0 = new PdfPTable(1);  
-	          invoiceMetaDataTable0.setTotalWidth(250.0f);  
-	          invoiceMetaDataTable0.getDefaultCell().setBorder(PdfPCell.NO_BORDER);  
-//	          invoiceMetaDataTable0.getDefaultCell().setBorderWidth(1.5f);  
-	          invoiceMetaDataTable0.addCell(invoiceMetaDataTable);  
-	          invoiceMetaDataTable0.writeSelectedRows(0, 3, 300, 780, cb);  
 			int leftX = 40;
 			int y = 630;
 			createHeadings(cb, leftX, y, "Billing Address:",10);
@@ -231,8 +355,8 @@ public class InvoiceGenerator {
 				addItem(cb,String.valueOf(item.getQuantity()),
 						item.getInventoryItemCode(),
 						item.getDescription(),
-						String.valueOf(item.getUnitAmount()),
-						String.valueOf(item.getTotalamount()),String.valueOf(item.getGst()),"$"+String.valueOf(item.getSubtotal()),currentheight);
+						MathUtil.df.format(item.getUnitAmount()),
+						item.getTotalamounts(),item.getGsts(),"$"+item.getSubtotals(),currentheight);
 			}
 			currentheight -= 20;
 			createText(cb, leftX+340, currentheight,"Subtotal:",10);
@@ -247,8 +371,13 @@ public class InvoiceGenerator {
 			createText(cb, leftX+440, currentheight,String.valueOf(invoice.getGst()),10);
 			createText(cb, leftX+480, currentheight,"$"+String.valueOf(invoice.getSubtotal()),10);
 
-			createHeadings(cb, leftX, currentheight-50,"Custom Note:",10);
-			createText(cb,leftX+30,currentheight-50,invoice.getCustomerNote(),8);
+			int customNoteY= currentheight-50;
+			if(currentheight-50<400)
+			{
+				customNoteY = currentheight;
+			}
+			createHeadings(cb, leftX, customNoteY,"Custom Note:",10);
+			createText(cb,leftX+30,customNoteY,invoice.getCustomerNote(),8);
 
 
 			if(!StringUtils.isBlank(invoice.getOrderNote()))
@@ -260,15 +389,18 @@ public class InvoiceGenerator {
 				}
 				createText(cb,leftX,currentheight-60-10*arty.length,"On back order.",8);
 			}
-
-
-
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
-	
+	private void addItem2(PdfContentByte cb,String qty,String code,String name,String price,String total,String gst,String subtotal,int y)
+	{
+		createText(cb, 40, y,qty,10);
+		createText(cb, 80, y,code,10);
+		createText(cb, 150,y,name,10);
+	}
+
 	private void addItem(PdfContentByte cb,String qty,String code,String name,String price,String total,String gst,String subtotal,int y)
 	{
 		createText(cb, 40, y,qty,10);

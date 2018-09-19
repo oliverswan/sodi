@@ -1,6 +1,5 @@
 package net.oliver.sodi.spring;
 
-import net.oliver.sodi.mail.MailBoxMonitor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -18,14 +17,15 @@ public class SodiApplicationListener implements ApplicationListener<ContextRefre
             applicationContext = contextRefreshedEvent.getApplicationContext();
         }
 
-        MailBoxMonitor monitor = applicationContext.getBean(MailBoxMonitor.class);
-
-       Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    monitor.start();
-                }
-            });
-       thread.start();
+//        MailBoxMonitor monitor = applicationContext.getBean(MailBoxMonitor.class);
+//
+//       Thread thread = new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    monitor.start();
+//                }
+//            });
+//       thread.setName("SodiMailCheckThread_"+System.currentTimeMillis());
+//       thread.start();
     }
 }

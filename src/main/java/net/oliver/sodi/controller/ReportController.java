@@ -261,12 +261,28 @@ public class ReportController {
     @RequestMapping(value = "/invoice/{id}",method = RequestMethod.GET)
     public void  createInvoice(HttpServletRequest request, HttpServletResponse response, @PathVariable int id/*@RequestParam int num*/) throws Exception {
         response.setHeader("content-Type", "application/pdf");// 告诉浏览器用什么软件可以打开此文件
-        response.setHeader("Content-Disposition", "inline;filename=delivery.pdf"); // 下载文件的默认名称
+        response.setHeader("Content-Disposition", "inline;filename=invoice.pdf"); // 下载文件的默认名称
         Invoice invoice = invoiceService.findById(id);
         Document document = new Document();
         try {
             PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
             invo.createInvoice(document,writer,invoice);
+            response.flushBuffer();
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    @RequestMapping(value = "/delivery/{id}",method = RequestMethod.GET)
+    public void  createDelviery(HttpServletRequest request, HttpServletResponse response, @PathVariable int id/*@RequestParam int num*/) throws Exception {
+        response.setHeader("content-Type", "application/pdf");// 告诉浏览器用什么软件可以打开此文件
+        response.setHeader("Content-Disposition", "inline;filename=delivery.pdf"); // 下载文件的默认名称
+        Invoice invoice = invoiceService.findById(id);
+        Document document = new Document();
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, response.getOutputStream());
+            invo.createDelivery(document,writer,invoice);
             response.flushBuffer();
         } catch (DocumentException e) {
             e.printStackTrace();

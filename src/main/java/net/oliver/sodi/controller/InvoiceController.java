@@ -1,16 +1,17 @@
 package net.oliver.sodi.controller;
 
-import net.oliver.sodi.model.Backorder;
-import net.oliver.sodi.model.Invoice;
-import net.oliver.sodi.model.InvoiceItem;
-import net.oliver.sodi.model.Item;
+import net.oliver.sodi.model.*;
 import net.oliver.sodi.service.IBackorderService;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.service.IItemService;
 import net.oliver.sodi.util.MongoAutoidUtil;
 import net.oliver.sodi.util.XeroUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,8 @@ public class InvoiceController {
 
     @Autowired
     IBackorderService backorderService;
+
+    static final Logger logger = LoggerFactory.getLogger(InvoiceController.class);
 
     @RequestMapping(value = { "/add" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
     @ResponseBody
@@ -56,8 +59,18 @@ public class InvoiceController {
 
     @GetMapping("")
     @ResponseBody
-    public List<Invoice> getAll()  {
-        return invoiceService.findAll();
+//    url = url + "pageNum=" + this.pageNum + '&pageSize=' + this.pageSize
+    public InvoicesResult getAll(int pageNum, int pageSize)  {
+        return invoiceService.findAll(buildPageRequest(pageNum,pageSize,""));
+    }
+
+    private PageRequest buildPageRequest(int pageNumber, int pageSize, String sortType) {
+        Sort sort =  new Sort(Sort.Direction.ASC, "_id");;
+//        if ("auto".equals(sortType)) {
+//            sort = new Sort(Sort.Direction.ASC, "_id");
+//        }
+        //参数1表示当前第几页,参数2表示每页的大小,参数3表示排序
+        return new PageRequest(pageNumber-1,pageSize,sort);
     }
 
     @GetMapping("/draft")
@@ -160,9 +173,11 @@ public class InvoiceController {
 
                     bo.addItem(item.getCode(),needmore);
                     item.setStock(0);
+                    // 更新订单item的数量
                     iitem.setQuantity(iitem.getQuantity() - needmore);
+                    iitem.reCalculate();
                 }else{
-
+                    // 更新仓库数量
                     item.setStock(stock); // 更新售出后的库存
                 }
                 item.setSoldThisYear(sold);

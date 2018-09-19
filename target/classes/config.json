@@ -1,8 +1,8 @@
 {
   "AppType" : "PRIVATE",
-  "UserAgent": "AgAppHome-CDPB2R",
-  "ConsumerKey" : "627N9RERYMNAKV0LJTEZOVMEIILBCX",
-  "ConsumerSecret" : "VJBFZESWGZDF1PQPZHGF4VQTDTXLEG",
+  "UserAgent": "SodiConnection-CDPB2R",
+  "ConsumerKey" : "BQTK1EQ7CQLID2NGFV0P8C0VHXI9D7",
+  "ConsumerSecret" : "NZRV4W7REXVLMNXAGLZBW0YNVKWNIF",
   "PrivateKeyCert" :  "certs/public_privatekey.pfx",
   "PrivateKeyPassword" :  "123456"
 }

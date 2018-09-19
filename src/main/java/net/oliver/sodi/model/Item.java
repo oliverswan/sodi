@@ -23,6 +23,15 @@ public class Item {
     private double price;
     private double cprice;
     private String orderNumber;
+    private String accountCode;
+
+    public String getAccountCode() {
+        return accountCode;
+    }
+
+    public void setAccountCode(String accountCode) {
+        this.accountCode = accountCode;
+    }
 
     public String getOrderNumber() {
         return orderNumber;

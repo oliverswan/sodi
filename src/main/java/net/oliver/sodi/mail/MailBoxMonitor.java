@@ -34,6 +34,7 @@ package net.oliver.sodi.mail;
 import com.sun.mail.imap.IMAPFolder;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.service.IInvoiceService;
+import net.oliver.sodi.spring.SodiApplicationListener;
 import net.oliver.sodi.util.JsoupUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.james.mime4j.codec.DecodeMonitor;
@@ -42,6 +43,8 @@ import org.apache.james.mime4j.parser.ContentHandler;
 import org.apache.james.mime4j.parser.MimeStreamParser;
 import org.apache.james.mime4j.stream.BodyDescriptorBuilder;
 import org.apache.james.mime4j.stream.MimeConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import tech.blueglacier.email.Attachment;
@@ -54,6 +57,8 @@ import javax.mail.event.MessageCountEvent;
 import javax.mail.internet.MimeBodyPart;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -62,16 +67,21 @@ import java.util.Properties;
 @Component
 public class MailBoxMonitor {
 
+    static final Logger logger = LoggerFactory.getLogger(MailBoxMonitor.class);
+
     @Autowired
     IInvoiceService invoiceService;
 
     final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
+
+    private IMAPFolder folder;
 
     public void getContent(Message message) throws MessagingException, IOException
     {
         String subject = message.getSubject();
         if(subject.indexOf("New Order")<0)
         {
+            logger.info("Not new order,ignore it");
             return;
         }
 
@@ -168,14 +178,62 @@ public class MailBoxMonitor {
         try {
             int lastSeenUID =Integer.parseInt((String) System.getProperties().get("MAILBOX_LAST_SEEN_UID"));
             if (uid <= lastSeenUID) {
+                logger.info("Reutrn false for Check: lastSeenUID : "+lastSeenUID+" uid: "+uid);
                 return false;
             }
-        } catch (Exception ignored) { }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.info("Exception ocurrs in updateLastSeenUID: "+e.getMessage());
+        }
 
         System.getProperties().setProperty("MAILBOX_LAST_SEEN_UID",String.valueOf(uid));
         return true;
     }
 
+    public void connect() throws Exception {
+        Properties props = System.getProperties();
+
+        props.setProperty("mail.imaps.socketFactory.class", SSL_FACTORY);
+        props.setProperty("mail.imaps.socketFactory.fallback", "false");
+        props.setProperty("mail.imaps.port", "993");
+        props.setProperty("mail.imaps.socketFactory.port", "993");
+        props.put("mail.imaps.host", "outlook.office365.com");
+
+        // Get a Session object
+        Session session = Session.getInstance(props,null);
+        // session.setDebug(true);
+        // Get a Store object
+//            Store store = session.getStore("imaps");
+//            // Connect
+////            store.connect("imap.126.com", "oliver_reg", "maiyang9");
+//            //DinithraSod1
+//            store.connect("sodirentalkarts.com.au", "info@sodirentalkarts.com.au", "HuluGo294");
+        Store store = session.getStore("imaps");
+        store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
+
+        // Open a Folder
+        folder = (IMAPFolder) store.getFolder("INBOX");
+        if (folder == null || !folder.exists()) {
+            System.out.println("Invalid folder");
+//                System.exit(1);
+            return;
+        }
+        if(!folder.isOpen())
+        folder.open(Folder.READ_WRITE);
+    }
+
+    public void reOpenFolder() throws MessagingException {
+
+        if(!folder.isOpen()){
+            Session session = Session.getInstance(System.getProperties(),null);
+            Store store = session.getStore("imaps");
+            store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
+            // Open a Folder
+            folder = (IMAPFolder) store.getFolder("INBOX");
+            folder.open(Folder.READ_WRITE);
+            logger.info("Folder is reopened "+folder.isOpen());
+        }
+    }
     public  void start() {
 //        if (argv.length != 5) {
 //            System.out.println(
@@ -183,100 +241,81 @@ public class MailBoxMonitor {
 //            System.exit(1);
 //        }
 //        System.out.println("\nTesting monitor\n");
-        Folder folder = null;
+
 
         try {
-            Properties props = System.getProperties();
-
-            props.setProperty("mail.imaps.socketFactory.class", SSL_FACTORY);
-            props.setProperty("mail.imaps.socketFactory.fallback", "false");
-            props.setProperty("mail.imaps.port", "993");
-            props.setProperty("mail.imaps.socketFactory.port", "993");
-            props.put("mail.imaps.host", "outlook.office365.com");
-
-            // Get a Session object
-            Session session = Session.getInstance(props,null);
-            // session.setDebug(true);
-            // Get a Store object
-//            Store store = session.getStore("imaps");
-//            // Connect
-////            store.connect("imap.126.com", "oliver_reg", "maiyang9");
-//            //DinithraSod1
-//            store.connect("sodirentalkarts.com.au", "info@sodirentalkarts.com.au", "HuluGo294");
-            Store store = session.getStore("imaps");
-            store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
-
-            // Open a Folder
-             folder = (IMAPFolder) store.getFolder("INBOX");
-            if (folder == null || !folder.exists()) {
-                System.out.println("Invalid folder");
-                System.exit(1);
-            }
-
-
-            folder.open(Folder.READ_WRITE);
+            connect();
             folder.addMessageCountListener(new MessageCountAdapter() {
                 @Override
                 public void messagesAdded(MessageCountEvent ev) {
                     Message[] msgs = ev.getMessages();
                     for (int i = 0; i < msgs.length; i++) {
                         try {
-                            System.out.println(Thread.currentThread().getName()+" ： Receive Message " +msgs[i].getMessageNumber() + ":");
-                            if(updateLastSeenUID(msgs[i].getMessageNumber()))
-                            {
+                            logger.info("Receive Message " +msgs[i].getMessageNumber() + ":");
+//                            if(updateLastSeenUID(msgs[i].getMessageNumber()))
+//                            {
                                 getContent(msgs[i]);
-                                System.out.println("Process Mail done!!!");
-                            }else{
-                                System.out.println("Ignore one message..");
-                            }
+//                                logger.info("Process Mail done!!!");
+//                            }else{
+//                                logger.info("Ignore it..");
+//                            }
 
-                        } catch (IOException ioex) {
-                            ioex.printStackTrace();
-                        } catch (MessagingException mex) {
-                            mex.printStackTrace();
+                        } catch (Exception e) {
+                            logger.info("Exception Occurs during MessageCounterListener.."+e.getMessage()+" "+e.getClass().getCanonicalName());
+                            StringWriter sw = new StringWriter();
+                            e.printStackTrace(new PrintWriter(sw, true));
+                            String str = sw.toString();
+                            System.out.println("==========");
+                            logger.info(str);
                         }
                     }
                 }
             });
 
             // Check mail once in "freq" MILLIseconds
-            int freq = 2000;
+            int freq = 3000;
             boolean supportsIdle = true;
-//            try {
-//                if (folder instanceof IMAPFolder) {
-//                    IMAPFolder f = (IMAPFolder)folder;
-//                    f.idle();
-//                    supportsIdle = true;
-//                }
-//            } catch (FolderClosedException fex) {
-//                throw fex;
-//            } catch (MessagingException mex) {
-//                supportsIdle = false;
-//            }
+
             for (;;) {
-                if (supportsIdle && folder instanceof IMAPFolder) {
-                    IMAPFolder f = (IMAPFolder)folder;
-                    f.idle();
-                    System.out.println("IDLE done");
-                } else {
-                    Thread.sleep(freq); // sleep for freq milliseconds
+//                Thread.sleep(freq);
+//                System.out.println(Thread.currentThread().getName()+" running..");
+                logger.info(Thread.currentThread().getName()+" running....");
+                    try{
+                        if(folder.isOpen())
+                        {
+                            logger.info("Call idle....");
+                            folder.idle();
+                        }
+//                        else {
+//                            reOpenFolder();
+//                        }
 
-                    // This is to force the IMAP server to send us
-                    // EXISTS notifications.
-//                    folder.getMessageCount();
-                }
-            }
-// =cz&S52f
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }finally {
-            try {
-                if(folder!=null)
-                folder.close(true);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            }
+                    }catch (FolderClosedException ex)
+                    {
+                        logger.info("FolderClosedException....");
+//                        ex.printStackTrace();
+                        MailBoxMonitor monitor = SodiApplicationListener.applicationContext.getBean(MailBoxMonitor.class);
+                        Thread t = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                monitor.start();
+                            }
+                        });
+                        t.setName("SodiMailCheckThread_"+System.currentTimeMillis());
+                        t.start();
+                        logger.info("New Mail Thread started...."+t.getState());
+//                        reOpenFolder();
+                        return;
+                    }
 
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        logger.info(Thread.currentThread().getName()+" Exit....");
     }
 }

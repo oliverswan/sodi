@@ -4,6 +4,7 @@ import net.oliver.sodi.dao.IItemDao;
 import net.oliver.sodi.model.Item;
 import net.oliver.sodi.service.IItemService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -60,5 +61,20 @@ public class ItemSericeImpl implements IItemService {
         Criteria c2 = Criteria.where("name").regex(pattern);
         Query query = new Query(new Criteria().orOperator(c1,c2));
         return mongoTemplate.find(query,Item.class);
+    }
+
+    @Override
+    public List<Item> findAllOrderBySoldThisYear() {
+
+//        return dao.findAllOrderBySoldThisYear();
+        Query query = new Query();
+        query.with(new Sort(Sort.Direction.DESC, "soldThisYear"));
+        return  mongoTemplate.find(query, Item.class);
+    }
+
+
+    @Override
+    public List<Item> findBySoldThisYear(int number) {
+        return dao.findBySoldThisYear(number);
     }
 }

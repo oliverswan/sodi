@@ -9,13 +9,12 @@ import net.oliver.sodi.spring.SodiApplicationListener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +32,8 @@ public class JsoupUtil {
     static ItemUtil itemUtil;
 
     static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+
+    static final Logger logger = LoggerFactory.getLogger(JsoupUtil.class);
 
     private static void inital()
     {
@@ -84,12 +85,12 @@ public class JsoupUtil {
             Elements itemTrs =itemTr.get(2).siblingElements();
             for (int i = 0; i < itemTrs.size() - 2; i++) {
                 Elements tds = itemTrs.get(i).select("td");
-                System.out.println(tds.get(0).text().trim());
                 InvoiceItem iItem = new InvoiceItem();
                 itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem);
                 invoice.addItem(iItem);
             }
-
+            invoice.setMoblie(contact.getMobile());
+            invoice.setTel(contact.getPhone());
             invoice.setPOCity(contact.getPoCity());
             invoice.setContactName(contact.getContactName());
             invoice.setPOCountry(contact.getPoCountry());
@@ -113,11 +114,16 @@ public class JsoupUtil {
             //
             invoice.setInvoiceDate(dateFormat.format(new Date()));
             //TODO 修改duedate
-            invoice.setDueDate(dateFormat.format(new Date()));
+            invoice.setDueDate(DateUtil.getMaxMonthDate(dateFormat.format(new Date())));
             invoice.reCalculate();
             return invoice;
         } catch (Exception e) {
             e.printStackTrace();
+            logger.info("Exception Occurs during analyst mail.."+e.getMessage()+" "+e.getClass().getCanonicalName());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw, true));
+            String str = sw.toString();
+            logger.info(str);
         }
         return null;
     }

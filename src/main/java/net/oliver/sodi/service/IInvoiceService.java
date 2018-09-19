@@ -1,6 +1,8 @@
 package net.oliver.sodi.service;
 
 import net.oliver.sodi.model.Invoice;
+import net.oliver.sodi.model.InvoicesResult;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 
@@ -11,6 +13,10 @@ public interface IInvoiceService {
     void saveInvoices(List<Invoice> list);
 
     List<Invoice> findAll();
+
+    InvoicesResult findAll(PageRequest request);
+
+
 
     List<Invoice> findDraft();
 
