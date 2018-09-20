@@ -11,7 +11,7 @@ public class InvoiceItem {
     private String InventoryItemCode;
     private String Description;
     private int Quantity;
-    private BigDecimal UnitAmount;
+    private BigDecimal UnitAmount  = new BigDecimal("0.00");
     private String Discount;
     private String AccountCode;
     private String TaxType;
@@ -24,9 +24,9 @@ public class InvoiceItem {
     private String product_attribute;
     private String product_subtotal_discount;
     private String product_quantity;
-    private BigDecimal totalamount;
-    private BigDecimal subtotal;
-    private BigDecimal gst;
+    private BigDecimal totalamount = new BigDecimal("0.00");
+    private BigDecimal subtotal  = new BigDecimal("0.00");
+    private BigDecimal gst  = new BigDecimal("0.00");
     private String totalamounts;
     private String subtotals;
     private String gsts;

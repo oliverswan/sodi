@@ -115,11 +115,12 @@ public class MailBoxMonitor {
         }
         else if(contentType.contains("multipart"))
         {
+            //
             Multipart mp = (Multipart)message.getContent();
             int numParts = mp.getCount();
-//            for(int count = 1; count < numParts; count++)
-//            {
-                MimeBodyPart part = (MimeBodyPart)mp.getBodyPart(1);
+            for(int count = 0; count < numParts; count++)
+            {
+                MimeBodyPart part = (MimeBodyPart)mp.getBodyPart(count);
                 String content = part.getContent().toString();
 
 //                if(MimeBodyPart.ATTACHMENT.equalsIgnoreCase(part.getDisposition()))
@@ -131,7 +132,8 @@ public class MailBoxMonitor {
                 {
                     Invoice invoice = JsoupUtil.getInvoice(content);
                     invoiceService.save(invoice);
-//                }
+                    return;
+                }
 //                else
 //                    body += content;
             }

@@ -33,8 +33,8 @@ public class Invoice {
     private List<InvoiceItem> items = new ArrayList<InvoiceItem>();
     private BigDecimal totalamount;
     private String customerNote;
-    private BigDecimal subtotal;
-    private BigDecimal gst;
+    private BigDecimal subtotal = new BigDecimal("0.00");
+    private BigDecimal gst = new BigDecimal("0.00");
     private String orderNote;
     private String moblie;
     private String tel;
