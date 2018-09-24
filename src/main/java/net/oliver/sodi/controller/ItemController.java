@@ -11,6 +11,9 @@ import net.oliver.sodi.util.MongoAutoidUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -108,28 +111,45 @@ public class ItemController {
             while ((nextLine = reader.readNext()) != null) {
 
                 String code = nextLine[0];
+                if(StringUtils.isBlank(code))
+                {
+                    continue;
+                }
+                if(code.equals("AC614.030"))
+                {
+                    System.out.println("xx");
+                }
 
                 List<Item> l = service.findByCode(code.trim());
                 if(l.size()>0)
                 {
+                    Query query=new Query(Criteria.where("code").is(code));
                     if(!StringUtils.isBlank(nextLine[1]))
                     {
-                        String name = nextLine[1];
-                        l.get(0).setName(name);
+                        String name = nextLine[1].trim();
+                        Update update = Update.update("name",name);
+                        mongoTemplate.updateFirst(query, update, Item.class);
                     }
 
                     if(!StringUtils.isBlank(nextLine[3]))
                     {
                         String cprice = nextLine[3].replaceAll(",","");
-                        l.get(0).setCprice(Double.parseDouble(MathUtil.df.format(Double.parseDouble(cprice))));
+                        Update update = Update.update("cprice", Double.parseDouble(MathUtil.df.format(Double.parseDouble(cprice))));
+                        mongoTemplate.updateFirst(query, update, Item.class);
+
+//                        String cprice = nextLine[3].replaceAll(",","");
+//                        l.get(0).setCprice(Double.parseDouble(MathUtil.df.format(Double.parseDouble(cprice))));
                     }
                     if(!StringUtils.isBlank(nextLine[7]))
                     {
                         String price = nextLine[7].replaceAll(",","");
-                        l.get(0).setPrice(Double.parseDouble(MathUtil.df.format(Double.parseDouble(price))));
+                        double pr = Double.parseDouble(MathUtil.df.format(Double.parseDouble(price)));
+                        Update update = Update.update("price",pr);
+                        mongoTemplate.updateFirst(query, update, Item.class);
                     }
-                    l.get(0).setCode(code);
-                    service.save(l.get(0));
+
+
+                    System.out.println("##############Update : "+ code);
                 }else{
                     Item item = new Item();
                     item.setId(sequence.getNextSequence("item"));
@@ -154,6 +174,7 @@ public class ItemController {
                     }
                     item.setCode(code);
                     service.save(item);
+                    System.out.println("?????????????????Save : "+ code);
                 }
             }
         } catch (Exception e) {
@@ -184,7 +205,7 @@ public class ItemController {
                     if(!StringUtils.isBlank(nextLine[1]))
                     {
                         String name = nextLine[1];
-                        l.get(0).setName(name);
+                        l.get(0).setName(name.trim());
                     }
 
                     if(!StringUtils.isBlank(nextLine[3]))
@@ -197,7 +218,8 @@ public class ItemController {
                         String price = nextLine[7].replaceAll(",","");
                         l.get(0).setPrice(Double.parseDouble(MathUtil.df.format(Double.parseDouble(price))));
                     }
-                    l.get(0).setCode(code);
+                    l.get(0).setCode(code.trim());
+
                     service.save(l.get(0));
                 }else{
                     Item item = new Item();
@@ -206,9 +228,9 @@ public class ItemController {
                     if(!StringUtils.isBlank(nextLine[1]))
                     {
                         String name = nextLine[1];
-                        item.setName(name);
+                        item.setName(name.trim());
                     }else{
-                        item.setName(code);
+                        item.setName(code.trim());
                     }
 
                     if(!StringUtils.isBlank(nextLine[3]))
@@ -221,7 +243,7 @@ public class ItemController {
                         String price = nextLine[7].replaceAll(",","");
                         item.setPrice(Double.parseDouble(MathUtil.df.format(Double.parseDouble(price))));
                     }
-                    item.setCode(code);
+                    item.setCode(code.trim());
                     service.save(item);
                 }
             }

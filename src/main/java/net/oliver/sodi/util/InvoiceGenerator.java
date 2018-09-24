@@ -242,9 +242,9 @@ public class InvoiceGenerator {
 			createHeadings(cb, leftX, y, "Shipping Address:",10);
 			createText(cb, leftX, y-10, invoice.getContactName(),10);
 			createText(cb, leftX, y-20, invoice.getContactPerson(),10);
-			createText(cb, leftX, y-30, invoice.getPOAddressLine1(),10);
-			createText(cb, leftX, y-40, invoice.getPOAddressLine2(),10);
-			createText(cb, leftX, y-50, invoice.getPOAddressLine3(),10);
+			createText(cb, leftX, y-30, invoice.getPoaddressline1(),10);
+			createText(cb, leftX, y-40, invoice.getPoaddressline2(),10);
+			createText(cb, leftX, y-50, invoice.getPoaddressline3(),10);
 
 			int x = 300;
 
@@ -312,25 +312,27 @@ public class InvoiceGenerator {
 			createHeadings(cb, leftX, y, "Billing Address:",10);
 			createText(cb, leftX, y-10, invoice.getContactName(),10);
 			createText(cb, leftX, y-20, invoice.getContactPerson(),10);
-			createText(cb, leftX, y-30, invoice.getPOAddressLine1(),10);
-			createText(cb, leftX, y-40, invoice.getPOAddressLine2(),10);
-			createText(cb, leftX, y-50, invoice.getPOAddressLine3(),10);
+			createText(cb, leftX, y-30, invoice.getPoaddressline1(),10);
+			createText(cb, leftX, y-40, invoice.getPoaddressline2(),10);
+//			createText(cb, leftX, y-50, invoice.getPoaddressline3(),10);
+			createText(cb, leftX ,y-50, invoice.getPocountry(),10);
 			
 			int x = 300;
 			
 			createHeadings(cb, x, y , "Shipping Address:",10);
 			createText(cb, x, y-10, invoice.getContactName(),10);
 			createText(cb, x, y-20, invoice.getContactPerson(),10);
-			createText(cb, x, y-30, invoice.getPOAddressLine1(),10);
-			createText(cb, x, y-40, invoice.getPOAddressLine2(),10);
-			createText(cb, x, y-50, invoice.getPOAddressLine3(),10);
+			createText(cb, x, y-30, invoice.getPoaddressline1(),10);
+			createText(cb, x, y-40, invoice.getPoaddressline2(),10);
+//			createText(cb, x, y-50, invoice.getPoaddressline3(),10);
+			createText(cb, x, y-50, invoice.getPocountry(),10);
 			
 			int invnY = 550;
 			createHeadings(cb, leftX, invnY, "Tax Invoice"+invoice.getInvoiceNumber(),14);
 			
 //			Invoice date: 20/08/2018
 //			Payment type: Bank Deposit
-			createText(cb, x+100, invnY, "Invoice date:    "+invoice.getInvoiceDate(),10);
+			createText(cb, x+100, invnY, "Invoice date:    "+invoice.getInvoiceDate().substring(0,10),10);
 			createText(cb, x+100, invnY-10, "Payment type:    Bank Deposit",10);
 			
 //			Qty. Part No. Product Unit Price Total GST Subtotal

@@ -69,14 +69,14 @@ public class UploadController {
                         invoice = new Invoice();
                         invoice.setContactName(strArr[0]);
                         invoice.setEmailAddress(strArr[1]);
-                        invoice.setPOAddressLine1(strArr[2]);
-                        invoice.setPOAddressLine2(strArr[3]);
-                        invoice.setPOAddressLine3(strArr[4]);
-                        invoice.setPOAddressLine4(strArr[5]);
-                        invoice.setPOCity(strArr[6]);
-                        invoice.setPORegion(strArr[7]);
-                        invoice.setPOPostalCode(strArr[8]);
-                        invoice.setPOCountry(strArr[9]);
+                        invoice.setPoaddressline1(strArr[2]);
+                        invoice.setPoaddressline2(strArr[3]);
+                        invoice.setPoaddressline3(strArr[4]);
+                        invoice.setPoaddressline4(strArr[5]);
+                        invoice.setPocity(strArr[6]);
+                        invoice.setPoregion(strArr[7]);
+                        invoice.setPopostalcode(strArr[8]);
+                        invoice.setPocountry(strArr[9]);
 
                         invoice.setInvoiceNumber(Const.InvoiceNumerPrefix+sequence.getNextSequence("invoiceNumber"));//strArr[10]
                         invoice.setReference(strArr[11]);

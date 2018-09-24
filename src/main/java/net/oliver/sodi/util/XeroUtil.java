@@ -11,9 +11,7 @@ import net.oliver.sodi.model.InvoiceItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.Reader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -84,5 +82,42 @@ public class XeroUtil {
             e.printStackTrace();
         }
 
+    }
+
+
+    public static void createInvoice(net.oliver.sodi.model.Invoice sodiInvoice) {
+        try {
+                Invoice in = new Invoice();
+                in.getLineAmountTypes().add("Exclusive");
+                in.setType(InvoiceType.ACCREC);
+                in.setDate(dateFormat.parse(sodiInvoice.getInvoiceDate()));
+                List<LineItem> items = new ArrayList<LineItem>();
+                for (InvoiceItem sodiItem : sodiInvoice.getItems()) {
+                    LineItem item = new LineItem();
+                    item.setItemCode(sodiItem.getInventoryItemCode());
+                    item.setUnitAmount(sodiItem.getUnitAmount());
+                    item.setQuantity(new BigDecimal(sodiItem.getQuantity()));
+                    item.setDescription(sodiItem.getDescription());
+                    item.setTaxType("OUTPUT");//这里使用内部代码而非显示内容，澳大利亚的是GST 10%
+//                    item.setTaxAmount(new BigDecimal(sodiItem.getUnitAmount()*sodiItem.getQuantity()*0.1));
+                    item.setAccountCode(sodiItem.getAccountCode());
+                    item.setLineAmount(sodiItem.getUnitAmount().multiply(new BigDecimal(sodiItem.getQuantity())));
+                    items.add(item);
+                }
+                in.setLineItems(items);
+                Contact contact = new Contact();
+                contact.setName(sodiInvoice.getContactName());
+                in.setContact(contact);
+                in.setInvoiceNumber(sodiInvoice.getInvoiceNumber());
+                in.setReference(sodiInvoice.getInvoiceNumber());
+            List rr = client.createInvoice(in);
+        }catch (Exception e)
+        {
+            logger.error("Import to xero exception.."+e.getMessage());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw, true));
+            String str = sw.toString();
+            logger.info(str);
+        }
     }
 }

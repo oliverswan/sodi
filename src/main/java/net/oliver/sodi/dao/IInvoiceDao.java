@@ -12,6 +12,8 @@ public interface IInvoiceDao extends PagingAndSortingRepository<Invoice, Integer
 
     List<Invoice> findByStatus(int status);
 
+    List<Invoice> findByOrderNumber(String number);
+
     /*这里注意一点，虽然我们在调用Repository方法中的分页查询时，传入的参数是PageRequest。
     但一定要在Repository定义该方法时参数定义为Pageable。否则会报错:Paging query needs to have a Pageable parameter*/
     public Page<Invoice> findAll(Pageable pageable);

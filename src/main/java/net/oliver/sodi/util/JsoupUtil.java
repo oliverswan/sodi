@@ -5,7 +5,9 @@ import net.oliver.sodi.model.Contact;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.model.InvoiceItem;
 import net.oliver.sodi.service.IContactService;
+import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.spring.SodiApplicationListener;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -29,9 +31,12 @@ public class JsoupUtil {
     static IContactService contactService;
 
     @Autowired
+    static IInvoiceService invoiceSerivce;
+
+    @Autowired
     static ItemUtil itemUtil;
 
-    static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+    public static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
 
     static final Logger logger = LoggerFactory.getLogger(JsoupUtil.class);
 
@@ -41,6 +46,8 @@ public class JsoupUtil {
             sequence = SodiApplicationListener.applicationContext.getBean(MongoAutoidUtil.class);
         if (contactService == null)
             contactService = SodiApplicationListener.applicationContext.getBean(IContactService.class);
+        if (invoiceSerivce == null)
+            invoiceSerivce = SodiApplicationListener.applicationContext.getBean(IInvoiceService.class);
         if (itemUtil == null)
             itemUtil = SodiApplicationListener.applicationContext.getBean(ItemUtil.class);
     }
@@ -54,6 +61,14 @@ public class JsoupUtil {
             Document doc = Jsoup.parse(html);
             Elements one = doc.select("td:contains(Order Number:)");//"span:contains(Ship to:)"
             String orderNumber =  one.get(1).siblingElements().get(0).text().trim();
+            if(StringUtils.isBlank(orderNumber))
+            {
+                logger.info("Cant find orderNumer for email..");
+                return null;
+            }
+            Invoice orderInvo = invoiceSerivce.findByOrderNumber(orderNumber);
+            if(orderInvo !=null)
+                return null;
             Invoice invoice = new Invoice();
             Elements pShip = doc.select("p:contains(Ship to:)");
             String[] shippingInfo = pShip.text().split("br2n");
@@ -91,16 +106,17 @@ public class JsoupUtil {
             }
             invoice.setMoblie(contact.getMobile());
             invoice.setTel(contact.getPhone());
-            invoice.setPOCity(contact.getPoCity());
+            invoice.setPocity(contact.getPoCity());
             invoice.setContactName(contact.getContactName());
-            invoice.setPOCountry(contact.getPoCountry());
-            invoice.setPOPostalCode(contact.getPoPostalCode());
-            invoice.setPOAddressLine1(contact.getPoAddressLine1());
-            invoice.setPOAddressLine2(contact.getPoAddressLine2());
-            invoice.setPOAddressLine3(contact.getPoAddressLine3());
-            invoice.setPOAddressLine4(contact.getPoAddressLine4());
+            invoice.setContactPerson(contact.getPersonName());
+            invoice.setPocountry(contact.getPoCountry());
+            invoice.setPopostalcode(contact.getPoPostalCode());
+            invoice.setPoaddressline1(contact.getPoAddressLine1());
+            invoice.setPoaddressline2(contact.getPoAddressLine2());
+            invoice.setPoaddressline3(contact.getPoAddressLine3());
+            invoice.setPoaddressline4(contact.getPoAddressLine4());
             invoice.setEmailAddress(contact.getEmailAddress());
-            invoice.setPORegion(contact.getPoRegion());
+            invoice.setPoregion(contact.getPoRegion());
 
             invoice.setId(sequence.getNextSequence("invoice"));
             //orderNumber

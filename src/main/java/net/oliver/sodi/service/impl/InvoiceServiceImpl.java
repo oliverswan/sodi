@@ -9,6 +9,9 @@ import net.oliver.sodi.util.MongoAutoidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,10 +27,18 @@ public class InvoiceServiceImpl implements IInvoiceService {
     @Autowired
     MongoAutoidUtil sequence;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
+
     @Override
     public void save(Invoice invoice) {
         invoice.setReference(sequence.getNextSequence("invoiceReference")+"");
         invoice.setInvoiceNumber(Const.InvoiceNumerPrefix+sequence.getNextSequence("invoiceNumber"));
+        dao.save(invoice);
+    }
+
+    @Override
+    public void update(Invoice invoice) {
         dao.save(invoice);
     }
 
@@ -67,5 +78,24 @@ public class InvoiceServiceImpl implements IInvoiceService {
     @Override
     public Invoice findById(int id) {
         return dao.findOne(id);
+    }
+
+    @Override
+    public Invoice findByOrderNumber(String number) {
+        List<Invoice> list = dao.findByOrderNumber(number);
+        if(list.size()>0)
+            return  list.get(0);
+        return null;
+    }
+
+    @Override
+    public List<Invoice> findLikeNameOrNumber(String customerName, String InvoiceNumber) {
+
+//        Pattern pattern1 = Pattern.compile("^.*"+customerName+".*$", Pattern.CASE_INSENSITIVE);
+
+        Criteria c1 = Criteria.where("contactName").is(customerName);
+        Criteria c2 = Criteria.where("invoiceNumber").is(InvoiceNumber);
+        Query query = new Query(new Criteria().orOperator(c1,c2));
+        return mongoTemplate.find(query,Invoice.class);
     }
 }

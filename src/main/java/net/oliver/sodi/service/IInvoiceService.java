@@ -9,7 +9,7 @@ import java.util.List;
 public interface IInvoiceService {
 
     void save(Invoice invoice);
-
+    void update(Invoice invoice);
     void saveInvoices(List<Invoice> list);
 
     List<Invoice> findAll();
@@ -21,4 +21,8 @@ public interface IInvoiceService {
     List<Invoice> findDraft();
 
     Invoice findById(int id);
+    Invoice findByOrderNumber(String number);
+
+    List<Invoice> findLikeNameOrNumber(String customerName,String invoiceNumber);
+
 }

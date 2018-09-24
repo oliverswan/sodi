@@ -59,7 +59,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -85,33 +84,25 @@ public class MailBoxMonitor {
             return;
         }
 
-        String from = "";
-        ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
+//        String from = "";
+//        ArrayList<MimeBodyPart> attachments = new ArrayList<MimeBodyPart>();
         String contentType = message.getContentType();
-        Address[] addresses = message.getFrom();
-        if(addresses.length == 1)
-            from = addresses[0].toString();
-        else
-        {
-            for(int num = 0; num < addresses.length - 1; num++)
-                from += addresses[num].toString() + ", ";
-            from += addresses[addresses.length].toString();
-        }
+//        Address[] addresses = message.getFrom();
+//        if(addresses.length == 1)
+//            from = addresses[0].toString();
+//        else
+//        {
+//            for(int num = 0; num < addresses.length - 1; num++)
+//                from += addresses[num].toString() + ", ";
+//            from += addresses[addresses.length].toString();
+//        }
 
-        System.out.println(from);
-
-        if(contentType.contains("TEXT/PLAIN"))
+        if(contentType.contains("TEXT/HTML"))//"TEXT/PLAIN"
         {
-//            Object content = message.getContent();
-//            if(content != null)
-//                body += content.toString();
-        }
-        else if(contentType.contains("TEXT/HTML"))
-        {
-            Object content = message.getContent();
-            System.out.println(content);
-//            if(content != null)
-//                body += Jsoup.parse((String)content).text();
+            String content = (String) message.getContent();
+            Invoice invoice = JsoupUtil.getInvoice(content);
+            invoiceService.save(invoice);
+            return;
         }
         else if(contentType.contains("multipart"))
         {
@@ -131,7 +122,13 @@ public class MailBoxMonitor {
                     if(part.getContentType().contains("text/html"))
                 {
                     Invoice invoice = JsoupUtil.getInvoice(content);
-                    invoiceService.save(invoice);
+                    if(invoice!=null)
+                    {
+                        invoiceService.save(invoice);
+                    }else{
+                        logger.info("Cant generate invoice from one email..");
+                    }
+
                     return;
                 }
 //                else
