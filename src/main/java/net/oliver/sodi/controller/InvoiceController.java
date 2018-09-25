@@ -277,7 +277,7 @@ public class InvoiceController {
         }
         if(!importToXero)
         {
-            StringBuffer oldnote = new StringBuffer(invoice.getOrderNote());
+            StringBuffer oldnote = new StringBuffer(invoice.getOrderNote()==null?"":invoice.getOrderNote());
             oldnote.append("\r\n");
             oldnote.append("No stock,not shipped!");
             invoice.setOrderNote(oldnote.toString());
