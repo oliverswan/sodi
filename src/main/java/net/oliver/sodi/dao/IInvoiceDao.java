@@ -20,6 +20,8 @@ public interface IInvoiceDao extends PagingAndSortingRepository<Invoice, Integer
 
     public List<Invoice> findAll();
 
+    List<Invoice> findByStatus(int status,Pageable pageable);
+
 //    @Query("{ 'name':{'$regex':?2,'$options':'i'}, sales': {'$gte':?1,'$lte':?2}}")
 //    public Page<Product> findByNameAndAgeRange(String name,double ageFrom,double ageTo,Pageable page);
 //

@@ -62,6 +62,8 @@ public class InvoiceItem {
     public void reCalculate()
     {
         this.totalamount = this.UnitAmount.multiply(new BigDecimal(this.Quantity));
+        this.totalamount =  this.totalamount.setScale(2,   BigDecimal.ROUND_HALF_UP);
+
         this.gst = this.totalamount.multiply(new BigDecimal("0.1"));
         this.subtotal =this.totalamount.add(this.gst);
 

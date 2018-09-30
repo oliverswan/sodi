@@ -362,16 +362,16 @@ public class InvoiceGenerator {
 			}
 			currentheight -= 20;
 			createText(cb, leftX+340, currentheight,"Subtotal:",10);
-			createText(cb, leftX+400, currentheight,String.valueOf(invoice.getTotalamount()),10);
-			createText(cb, leftX+440, currentheight,String.valueOf(invoice.getGst()),10);
-			createText(cb, leftX+480, currentheight,"$"+String.valueOf(invoice.getSubtotal()),10);
+			createText(cb, leftX+400, currentheight,String.valueOf(invoice.getTotalamounts()),10);
+			createText(cb, leftX+440, currentheight,String.valueOf(invoice.getGsts()),10);
+			createText(cb, leftX+480, currentheight,"$"+String.valueOf(invoice.getSubtotals()),10);
 			line(cb,leftX+335,currentheight-10,leftX+505,currentheight-10);
 
 			currentheight -= 30;
 			createText(cb, leftX+340, currentheight,"Total:",10);
-			createText(cb, leftX+400, currentheight,String.valueOf(invoice.getTotalamount()),10);
-			createText(cb, leftX+440, currentheight,String.valueOf(invoice.getGst()),10);
-			createText(cb, leftX+480, currentheight,"$"+String.valueOf(invoice.getSubtotal()),10);
+			createText(cb, leftX+400, currentheight,String.valueOf(invoice.getTotalamounts()),10);
+			createText(cb, leftX+440, currentheight,String.valueOf(invoice.getGsts()),10);
+			createText(cb, leftX+480, currentheight,"$"+String.valueOf(invoice.getSubtotals()),10);
 
 			int customNoteY= currentheight-50;
 			if(currentheight-50<400)
@@ -381,16 +381,19 @@ public class InvoiceGenerator {
 			createHeadings(cb, leftX, customNoteY,"Custom Note:",10);
 			createText(cb,leftX+30,customNoteY,invoice.getCustomerNote(),8);
 
-
-			if(!StringUtils.isBlank(invoice.getOrderNote()))
+			if(invoice.getOrderNote().indexOf("not shipped")<0)
 			{
-				String[] arty = invoice.getOrderNote().split(",");
-				for(int i =0;i<arty.length;i++)
+				if(!StringUtils.isBlank(invoice.getOrderNote()))
 				{
-					createText(cb,leftX,currentheight-60-10*i,arty[i],8);
+					String[] arty = invoice.getOrderNote().split(",");
+					for(int i =0;i<arty.length;i++)
+					{
+						createText(cb,leftX,currentheight-10-10*i,arty[i],8);
+					}
+					createText(cb,leftX,currentheight-10-10*arty.length,"On back order.",8);
 				}
-				createText(cb,leftX,currentheight-60-10*arty.length,"On back order.",8);
 			}
+
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();

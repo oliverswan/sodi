@@ -7,16 +7,13 @@ import net.oliver.sodi.model.InvoicesResult;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.util.MongoAutoidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 @Service
 public class InvoiceServiceImpl implements IInvoiceService {
@@ -39,6 +36,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
 
     @Override
     public void update(Invoice invoice) {
+        invoice.reCalculate();
         dao.save(invoice);
     }
 
@@ -56,18 +54,23 @@ public class InvoiceServiceImpl implements IInvoiceService {
     @Override
     public InvoicesResult findAll(PageRequest request) {
         InvoicesResult result = new InvoicesResult();
-        List<Invoice> r3 = new ArrayList<Invoice>();
+//        List<Invoice> r3 = new ArrayList<Invoice>();
         //TODO 分析如何将Page转为List
-        Page<Invoice> result2 =  dao.findAll(request);
-        result.setMessage(String.valueOf(result2.getTotalElements()));
-        result2.forEach(new Consumer<Invoice>() {
-            @Override
-            public void accept(Invoice invoice) {
-                r3.add(invoice);
-            }
-        });
-        result.setData(r3);
+        List<Invoice> result2 =  dao.findByStatus(1,request);
+//        result.setMessage(String.valueOf(result2.getTotalElements()));
+//        result2.forEach(new Consumer<Invoice>() {
+//            @Override
+//            public void accept(Invoice invoice) {
+//                r3.add(invoice);
+//            }
+//        });
+        result.setData(result2);
         return result;
+    }
+
+    @Override
+    public InvoicesResult findByStatus(PageRequest request) {
+        return null;
     }
 
     @Override

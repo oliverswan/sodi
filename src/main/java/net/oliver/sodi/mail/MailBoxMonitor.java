@@ -119,7 +119,7 @@ public class MailBoxMonitor {
 //
 //                else
 
-                    if(part.getContentType().contains("text/html"))
+                    if(part.getContentType().contains("text/html")|| part.getContentType().contains("TEXT/HTML"))
                 {
                     Invoice invoice = JsoupUtil.getInvoice(content);
                     if(invoice!=null)
@@ -196,20 +196,23 @@ public class MailBoxMonitor {
         props.setProperty("mail.imaps.socketFactory.fallback", "false");
         props.setProperty("mail.imaps.port", "993");
         props.setProperty("mail.imaps.socketFactory.port", "993");
-        props.put("mail.imaps.host", "outlook.office365.com");
-
+       // props.put("mail.imaps.host", "outlook.office365.com");
+        props.put("mail.imaps.host", "imap.gmail.com");
         // Get a Session object
         Session session = Session.getInstance(props,null);
         // session.setDebug(true);
         // Get a Store object
-//            Store store = session.getStore("imaps");
+            Store store = session.getStore("imaps");
 //            // Connect
 ////            store.connect("imap.126.com", "oliver_reg", "maiyang9");
+                //store.connect("imap.mail.yahoo.com", "sodikarts@yahoo.com", "Zar37097");
+        store.connect("imap.gmail.com", "sodikartsau@gmail.com", "Zar37097");
 //            //DinithraSod1
 //            store.connect("sodirentalkarts.com.au", "info@sodirentalkarts.com.au", "HuluGo294");
-        Store store = session.getStore("imaps");
-        store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
-
+// #################################################################
+       // Store store = session.getStore("imaps");
+       // store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
+// #################################################################
         // Open a Folder
         folder = (IMAPFolder) store.getFolder("INBOX");
         if (folder == null || !folder.exists()) {
@@ -226,7 +229,8 @@ public class MailBoxMonitor {
         if(!folder.isOpen()){
             Session session = Session.getInstance(System.getProperties(),null);
             Store store = session.getStore("imaps");
-            store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
+            //store.connect("outlook.office365.com", 993, "info@sodirentalkarts.com.au", "Maiyang9");
+            store.connect("imap.gmail.com", "sodikartsau@gmail.com", "Zar37097");
             // Open a Folder
             folder = (IMAPFolder) store.getFolder("INBOX");
             folder.open(Folder.READ_WRITE);

@@ -16,7 +16,7 @@ public interface IInvoiceService {
 
     InvoicesResult findAll(PageRequest request);
 
-
+    InvoicesResult findByStatus(PageRequest request);
 
     List<Invoice> findDraft();
 
