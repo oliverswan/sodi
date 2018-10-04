@@ -14,4 +14,6 @@ public interface IItemService {
     List<Item> findItemAutoComplete(String code);
     List<Item> findAllOrderBySoldThisYear();
     List<Item> findBySoldThisYear(int number);
+
+    boolean receiveOneItem(int id);
 }

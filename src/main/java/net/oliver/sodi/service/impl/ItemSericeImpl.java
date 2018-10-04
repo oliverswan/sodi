@@ -77,4 +77,18 @@ public class ItemSericeImpl implements IItemService {
     public List<Item> findBySoldThisYear(int number) {
         return dao.findBySoldThisYear(number);
     }
+
+    @Override
+    public boolean receiveOneItem(int id) {
+        Item item =  dao.findOne(id);
+        int coming = item.getComing();
+        if(coming>0)
+        {
+            int added = item.getStock()+coming;
+            item.setStock(added);
+            item.setComing(0);
+            dao.save(item);
+        }
+        return true;
+    }
 }

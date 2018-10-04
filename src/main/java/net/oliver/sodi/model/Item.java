@@ -17,6 +17,7 @@ public class Item {
     private int soldThisYear;// sold
     private int stock;// 当前存货
     private List<Integer> soldHistory;
+    // 需要一个变量指明过去多少个月的
     private double spm;// 平均每月销售量
     private double msoh;
     private double weight;
@@ -24,6 +25,15 @@ public class Item {
     private double cprice;
     private String orderNumber;
     private String accountCode;
+    private int coming;
+
+    public int getComing() {
+        return coming;
+    }
+
+    public void setComing(int coming) {
+        this.coming = coming;
+    }
 
     public String getAccountCode() {
         return accountCode;

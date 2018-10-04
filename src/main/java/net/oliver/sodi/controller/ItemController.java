@@ -82,6 +82,13 @@ public class ItemController {
         return result;
     }
 
+    @GetMapping("/receive/{id}")
+    @ResponseBody
+    public String receive(@PathVariable int id )  {
+        service.receiveOneItem(id);
+        return "{'status':'ok'}";
+    }
+
     @RequestMapping(value = { "/save" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
     @ResponseBody
     public String addInvoices(@RequestBody Item item)  {

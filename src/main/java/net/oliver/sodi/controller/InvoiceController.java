@@ -227,6 +227,12 @@ public class InvoiceController {
             if(itemResult == null || itemResult.size()<1)
                 continue;
             Backorder bo = new Backorder();
+            List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
+            if(bos.size()>0)
+            {
+                bo = bos.get(0);
+            }
+
             // 仓库信息
             Item item = itemResult.get(0);
             // 订单量
@@ -273,8 +279,8 @@ public class InvoiceController {
 //                    osb.append(" on back order.");
                 invoice.setOrderNote(osb.toString());
             }
-            invoice.reCalculate();
         }
+        invoice.reCalculate();
         if(!importToXero)
         {
             StringBuffer oldnote = new StringBuffer(invoice.getOrderNote()==null?"":invoice.getOrderNote());
@@ -314,5 +320,13 @@ public class InvoiceController {
     @ResponseBody
     public List<Invoice> findLikeNameOrNumber(String customerName,String invoiceNumber,int pageNum,int pageSize)  {
         return invoiceService.findLikeNameOrNumber(customerName,invoiceNumber);
+    }
+
+    @RequestMapping(value = { "/xero" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String xero(@RequestBody Invoice invoice)  {
+        Invoice inv = invoiceService.findById(invoice.getId());
+        XeroUtil.createInvoice(inv);
+        return "{'status':'ok'}";
     }
 }
