@@ -272,7 +272,7 @@ public class InvoiceController {
             if(iitem.getQuantity()>0 ) {
                 importToXero = true;
                 // 统计这个item 当月销售
-                soldHistoryService.addSoldTothisMonth(iitem.getInventoryItemCode(), SystemStatus.getCurrentMonth(), iitem.getQuantity());
+                soldHistoryService.addSoldTothisMonth(invoice.getContactName(),iitem.getInventoryItemCode(), SystemStatus.getCurrentMonth(), iitem.getQuantity());
             }
             item.setSoldThisYear(sold);
             inventoryItems.add(item);

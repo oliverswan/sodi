@@ -99,6 +99,17 @@ public class Item {
         this.msoh = msoh;
     }
 
+    public void reCalculateBasedOnThisYear(int month){
+        double spm2 = (float)this.soldThisYear/month;
+        this.spm = MathUtil.trimDouble(spm2);
+        if(this.stock <= 0)
+            this.msoh =0;
+        else if(this.spm <=0)
+            this.msoh = this.stock;
+        else
+            this.msoh = MathUtil.trimDouble(this.stock/this.spm);
+    }
+
     public synchronized void addSold(int s)
     {
         this.soldThisYear += s;
@@ -147,7 +158,8 @@ public class Item {
                 this.msoh = this.stock;
                 return;
             }
-            this.msoh = MathUtil.trimDouble(this.stock/this.spm);
+            double msoh2 = (double)this.stock/this.spm;
+            this.msoh = MathUtil.trimDouble(msoh2);
         }catch (Exception e)
         {
             e.printStackTrace();

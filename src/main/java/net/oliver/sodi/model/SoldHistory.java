@@ -14,8 +14,20 @@ public class SoldHistory {
 
     private String code;
     private Map<Integer,Integer> his = new HashMap<Integer,Integer>();
+    private Map<String,Integer> customerToSold = new HashMap<String,Integer>();
 
-    public void updateSoldQuantity(Integer month,Integer quantity)
+//    public void updateSoldQuantity(Integer month,Integer quantity)
+//    {
+//        Integer q = this.his.get(month);
+//        if(q==null)
+//        {
+//            q = 0;
+//            this.his.put(month,0);
+//        }
+//        this.his.put(month,q+quantity);
+//    }
+
+    public void updateSoldQuantity(String customer ,Integer month,Integer quantity)
     {
         Integer q = this.his.get(month);
         if(q==null)
@@ -24,7 +36,17 @@ public class SoldHistory {
             this.his.put(month,0);
         }
         this.his.put(month,q+quantity);
+
+        Integer customerSold = this.customerToSold.get(customer);
+        if(customerSold == null)
+        {
+            customerSold = 0;
+            this.customerToSold.put(customer,quantity);
+        }
+        this.customerToSold.put(customer,customerSold+quantity);
+
     }
+
     public String getCode() {
         return code;
     }

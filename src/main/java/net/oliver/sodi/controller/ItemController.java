@@ -64,6 +64,19 @@ public class ItemController {
         return service.findItemAutoComplete(criteria);
     }
 
+    @GetMapping("/recalculate/{monthAve}")
+    @ResponseBody
+    public String importXX(@PathVariable int monthAve )  {
+
+        List<Item> all = service.findAll();
+        for(Item item:all)
+        {
+            item.reCalculateBasedOnThisYear(monthAve);
+        }
+        service.save(all);
+        return "{'status':'ok'}";
+    }
+
     @GetMapping("/salesmost/{number}")
     @ResponseBody
     public SalesResult autoComplete(@PathVariable int number )  {
