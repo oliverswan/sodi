@@ -4,10 +4,8 @@ import net.oliver.sodi.model.*;
 import net.oliver.sodi.service.IBackorderService;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.service.IItemService;
-import net.oliver.sodi.util.DateUtil;
-import net.oliver.sodi.util.JsoupUtil;
-import net.oliver.sodi.util.MongoAutoidUtil;
-import net.oliver.sodi.util.XeroUtil;
+import net.oliver.sodi.service.ISoldHistoryService;
+import net.oliver.sodi.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +33,9 @@ public class InvoiceController {
 
     @Autowired
     IBackorderService backorderService;
+
+    @Autowired
+    ISoldHistoryService soldHistoryService;
 
     static final Logger logger = LoggerFactory.getLogger(InvoiceController.class);
 
@@ -263,12 +264,15 @@ public class InvoiceController {
                 item.setStock(0);
                 // 更新订单item的数量
                 iitem.setQuantity(iitem.getQuantity() - needmore);
-                if(iitem.getQuantity()>0)
-                    importToXero = true;
                 iitem.reCalculate();
             }else{
                 // 更新售出后的库存
                 item.setStock(stock);
+            }
+            if(iitem.getQuantity()>0 ) {
+                importToXero = true;
+                // 统计这个item 当月销售
+                soldHistoryService.addSoldTothisMonth(iitem.getInventoryItemCode(), SystemStatus.getCurrentMonth(), iitem.getQuantity());
             }
             item.setSoldThisYear(sold);
             inventoryItems.add(item);
