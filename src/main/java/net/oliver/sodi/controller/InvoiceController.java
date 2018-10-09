@@ -15,6 +15,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -212,7 +214,7 @@ public class InvoiceController {
         return "{'status':'ok'}";
     }
 
-    private void approveInvoice(Invoice invoice)
+    private String approveInvoice(Invoice invoice)
     {
         List<Invoice> xeroList = new ArrayList<Invoice>();
         List<Item> inventoryItems = new ArrayList<Item>();
@@ -272,7 +274,7 @@ public class InvoiceController {
             if(iitem.getQuantity()>0 ) {
                 importToXero = true;
                 // 统计这个item 当月销售
-                soldHistoryService.addSoldTothisMonth(invoice.getContactName(),iitem.getInventoryItemCode(), SystemStatus.getCurrentMonth(), iitem.getQuantity());
+                soldHistoryService.addSoldTothisMonth(invoice.getContactName(),iitem.getInventoryItemCode(), SystemStatus.getCurrentYM(), iitem.getQuantity());
             }
             item.setSoldThisYear(sold);
             inventoryItems.add(item);
@@ -293,21 +295,32 @@ public class InvoiceController {
             invoice.setOrderNote(oldnote.toString());
         }
 
+
+        // 导入Xero
+        if(importToXero) {
+            try {
+                XeroUtil.createInvoice(invoice);
+            } catch (Exception e) {
+                e.printStackTrace();
+                StringWriter sw = new StringWriter();
+                e.printStackTrace(new PrintWriter(sw, true));
+                String str = sw.toString();
+                logger.info(str);
+                return  "{'status':'fail','msg':"+e.getMessage()+" "+e.getClass().getCanonicalName()+"}";
+            }
+        }
         // 保存invoice
         invoiceService.update(invoice);
         // 更新本单所有的库存
         itemService.save(inventoryItems);
-        // 导入Xero
-        if(importToXero)
-            XeroUtil.createInvoice(invoice);
-
+        return "{'status':'ok'}";
     }
 
     @RequestMapping(value = { "/approveSingle" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
     @ResponseBody
     public String approviceS(@RequestBody Invoice invoice)  {
-        this.approveInvoice(invoice);
-        return "{'status':'ok'}";
+        String x = this.approveInvoice(invoice);
+        return x;
     }
 
     @RequestMapping(value = { "/approveMulti" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
@@ -330,7 +343,12 @@ public class InvoiceController {
     @ResponseBody
     public String xero(@RequestBody Invoice invoice)  {
         Invoice inv = invoiceService.findById(invoice.getId());
-        XeroUtil.createInvoice(inv);
+        try {
+            XeroUtil.createInvoice(inv);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{'status':'fail'}";
+        }
         return "{'status':'ok'}";
     }
 }

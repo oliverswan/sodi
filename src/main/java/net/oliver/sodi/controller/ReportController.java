@@ -2,15 +2,14 @@ package net.oliver.sodi.controller;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import net.oliver.sodi.model.BackOrderReportEntry;
-import net.oliver.sodi.model.Backorder;
-import net.oliver.sodi.model.Invoice;
-import net.oliver.sodi.model.Item;
+import net.oliver.sodi.model.*;
 import net.oliver.sodi.service.IBackorderService;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.service.IItemService;
+import net.oliver.sodi.service.ISoldHistoryService;
 import net.oliver.sodi.util.AlternatingBackground;
 import net.oliver.sodi.util.InvoiceGenerator;
+import net.oliver.sodi.util.SystemStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,9 @@ public class ReportController {
     IInvoiceService invoiceService;
 
     @Autowired
+    ISoldHistoryService soldHistoryService;
+
+    @Autowired
     InvoiceGenerator invo;
 
     private Font getPdfChineseFont() throws Exception {
@@ -49,14 +51,14 @@ public class ReportController {
         return fontChinese;
     }
 
-    private String[] columns = {"Seq", "Code", "Name","Stock","SPM","Reorder"};//,"Unit Cost","Margin"
+    private String[] columns = {"Seq", "Code","Stock","SPM","Reorder"};//,"Unit Cost","Margin"
     private String[] backOrdercolumns = {"Code", "Quantity","Distribute"};
     private String[] deliveryColumns = {"Name", "Items"};
     private void generatePDF(Document document,List<Item> items,int month) throws Exception {
             document.open();
             // seq,code,desc,stock,spm,reorder,cost,margin
-            PdfPTable table = new PdfPTable(6); // 设置表格是几列的
-            float[] cls = {75,125,75,75,75,75};
+            PdfPTable table = new PdfPTable(5); // 设置表格是几列的
+            float[] cls = {75,125,75,75,75};
             table.setTotalWidth(cls);//设置表格的各列宽度
             table.setLockedWidth(true);
 
@@ -74,7 +76,7 @@ public class ReportController {
             {
                 writeCell(table,String.valueOf(i));
                 writeCell(table,items.get(i-1).getCode());
-                writeCell(table,items.get(i-1).getName());
+//                writeCell(table,items.get(i-1).getName());
                 writeCell(table,""+items.get(i-1).getStock());
                 writeCell(table,""+items.get(i-1).getSpm());
                 // reorder
@@ -289,5 +291,104 @@ public class ReportController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // 销售历史报告
+    @RequestMapping(value = "/salehistory/{month}",method = RequestMethod.GET)
+    public void  salehistory(HttpServletRequest request, HttpServletResponse response, @PathVariable int month/*@RequestParam int num*/) throws Exception {
+
+        response.setHeader("content-Type", "application/pdf");// 告诉浏览器用什么软件可以打开此文件
+        response.setHeader("Content-Disposition", "inline;filename=reorder.pdf"); // 下载文件的默认名称
+        SystemStatus.getCurrentYM();
+
+        if(month > SystemStatus.getCurrentM())
+            month =  SystemStatus.getCurrentM();
+        // 0.根据参数
+        List<SoldHistory> result = soldHistoryService.findAllForSalesHistory(month);
+        Document document = new Document();
+        PdfWriter.getInstance(document, response.getOutputStream());
+        generateSalehistoryPDF(document,result,month);
+    }
+
+    private void generateSalehistoryPDF(Document document, List<SoldHistory> result, int month) throws DocumentException {
+        document.open();
+        // seq,code,desc,stock,spm,reorder,cost,margin
+        // code stock avsales msoh coming invvalue
+        int colsNum =month+6;
+
+        PdfPTable table = new PdfPTable(colsNum); // 设置表格是几列的
+
+        float[] cls = new float[colsNum];
+        cls[0]=80;
+
+        for(int i=1;i<cls.length;i++)
+        {
+            cls[i] = 550/colsNum;
+        }
+
+        table.setTotalWidth(cls);//设置表格的各列宽度
+        table.setLockedWidth(true);
+
+//        table.setWidth(80); // 宽度
+        table.setSummary("Summary");
+        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER); // 水平对齐方式
+        table.getDefaultCell().setVerticalAlignment(Element.ALIGN_CENTER); // 垂直对齐方式
+        table.setSplitLate(false);
+
+        // 处理列头
+        String[] colNames =new  String[colsNum];
+        colNames[0] = "Code";
+
+        for(int k=month-1,m=1;k>=0;k--,m++)
+        {
+            colNames[m] = SystemStatus.getCurrentMPrevious(k);
+        }
+
+        colNames[month+1]="stock";
+        colNames[month+2]="Last "+month+ "Av Sales";
+        colNames[month+3]="Msoh";
+        colNames[month+4]="On order";
+        colNames[month+5]="Inv Value";
+
+        for(String c :  colNames)
+        {
+            if(c.startsWith("2")&&c.length() < 6)
+            {
+                String nc = c.substring(0,4)+"0"+c.substring(4);
+                writeHeaderCell(table,nc);
+            }else{
+                writeHeaderCell(table,c);
+            }
+        }
+
+        for(SoldHistory en : result)
+        {
+            writeCell(table,en.getCode());
+            Map<Integer,Integer> curHis = en.getHis();
+            int total = 0;
+            for(int x=1;x<=month;x++)
+            {
+                Integer v = curHis.get(Integer.parseInt(colNames[x]));
+                if(v == null)
+                    v = 0;
+                 writeCell(table,String.valueOf(v));
+
+                total+=v;
+            }
+            float av = total/(month);
+
+            writeCell(table,"nil");// stock
+            writeCell(table,"  "+av);// av
+            writeCell(table,"nil");//msoh
+            writeCell(table,"nil");//on order
+            writeCell(table,"nil");// inv value
+        }
+
+        PdfPTableEvent event = new AlternatingBackground();
+        table.setTableEvent(event);
+
+        document.add(table);
+        document.close();
+
     }
 }

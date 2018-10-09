@@ -39,4 +39,9 @@ public class SoldHistoryService implements ISoldHistoryService {
             sh.updateSoldQuantity(customer,month,quantity);
             this.save(sh);
     }
+
+    @Override
+    public List<SoldHistory> findAllForSalesHistory(int month) {
+        return dao.findAll();
+    }
 }

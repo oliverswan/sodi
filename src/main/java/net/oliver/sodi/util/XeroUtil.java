@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,10 @@ public class XeroUtil {
     static final Logger logger = LoggerFactory.getLogger(XeroUtil.class);
     static
     {
+        connectToXero();
+    }
+
+    public static void connectToXero(){
         try {
             File f = new File(".");
             System.out.println(f.getAbsolutePath());
@@ -42,7 +47,10 @@ public class XeroUtil {
             Reader pemReader  = new FileReader(new File("./privatekey.pem"));
             client = new XeroClient(pemReader, config.getConsumerKey(), config.getConsumerSecret());
         } catch (Exception e) {
-            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw, true));
+            String str = sw.toString();
+            logger.info(str);
         }
     }
 
@@ -78,15 +86,18 @@ public class XeroUtil {
             List rr = client.createInvoices(ins);
         }catch (Exception e)
         {
-            logger.error("Import to xero exception.."+e.getMessage());
-            e.printStackTrace();
+//            logger.error("Import to xero exception.."+e.getMessage());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw, true));
+            String str = sw.toString();
+            logger.info(str);
         }
 
     }
 
 
-    public static void createInvoice(net.oliver.sodi.model.Invoice sodiInvoice) {
-        try {
+    public static void createInvoice(net.oliver.sodi.model.Invoice sodiInvoice) throws Exception {
+//        try {
                 Invoice in = new Invoice();
                 in.getLineAmountTypes().add("Exclusive");
                 in.setType(InvoiceType.ACCREC);
@@ -110,14 +121,16 @@ public class XeroUtil {
                 in.setContact(contact);
                 in.setInvoiceNumber(sodiInvoice.getInvoiceNumber());
                 in.setReference(sodiInvoice.getInvoiceNumber());
-            List rr = client.createInvoice(in);
-        }catch (Exception e)
-        {
-            logger.error("Import to xero exception.."+e.getMessage());
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw, true));
-            String str = sw.toString();
-            logger.info(str);
-        }
+                if(client == null)
+                    connectToXero();
+                List rr = client.createInvoice(in);
+//        }catch (Exception e)
+//        {
+//            logger.error("Import to xero exception.."+e.getMessage());
+//            StringWriter sw = new StringWriter();
+//            e.printStackTrace(new PrintWriter(sw, true));
+//            String str = sw.toString();
+//            logger.info(str);
+//        }
     }
 }
