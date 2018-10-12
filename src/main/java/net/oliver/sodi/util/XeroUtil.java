@@ -120,7 +120,8 @@ public class XeroUtil {
                 contact.setName(sodiInvoice.getContactName());
                 in.setContact(contact);
                 in.setInvoiceNumber(sodiInvoice.getInvoiceNumber());
-                in.setReference(sodiInvoice.getInvoiceNumber());
+                in.setReference(sodiInvoice.getReference());
+                in.setDueDate(dateFormat.parse(sodiInvoice.getDueDate()));
                 if(client == null)
                     connectToXero();
                 List rr = client.createInvoice(in);
