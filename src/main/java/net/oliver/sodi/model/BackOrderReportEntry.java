@@ -3,7 +3,7 @@ package net.oliver.sodi.model;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BackOrderReportEntry {
+public class BackOrderReportEntry  implements Comparable<BackOrderReportEntry> {
     private String itemCode;
     private int total;
     private Map<String,Integer> distribute = new HashMap<String,Integer>();
@@ -45,5 +45,10 @@ public class BackOrderReportEntry {
 
     public void setDistribute(Map<String, Integer> distribute) {
         this.distribute = distribute;
+    }
+
+    @Override
+    public int compareTo(BackOrderReportEntry o) {
+        return this.getItemCode().compareTo(o.getItemCode());
     }
 }

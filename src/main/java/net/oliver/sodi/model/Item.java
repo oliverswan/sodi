@@ -1,6 +1,7 @@
 package net.oliver.sodi.model;
 
 import net.oliver.sodi.util.MathUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,7 +9,7 @@ import java.util.Calendar;
 import java.util.List;
 
 @Document
-public class Item {
+public class Item implements Comparable<Item> {
 
     @Indexed
     private int id;  //自定义id
@@ -27,7 +28,11 @@ public class Item {
     private String orderNumber;
     private String accountCode;
     private int coming;
+    private String location;
 
+
+    public String getLocation() {return location;}
+    public void setLocation(String location) {this.location = location;}
 
     public int getComing() {
         return coming;
@@ -184,4 +189,8 @@ public class Item {
     }
 
 
+    @Override
+    public int compareTo(Item o) {
+        return this.code.compareTo(o.getCode());
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -60,7 +61,9 @@ public class ItemSericeImpl implements IItemService {
         Criteria c1 = Criteria.where("code").regex(pattern);
         Criteria c2 = Criteria.where("name").regex(pattern);
         Query query = new Query(new Criteria().orOperator(c1,c2));
-        return mongoTemplate.find(query,Item.class);
+        List<Item> r = mongoTemplate.find(query,Item.class);
+        Collections.sort(r);
+        return r;
     }
 
     @Override

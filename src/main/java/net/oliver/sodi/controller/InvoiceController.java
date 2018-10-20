@@ -230,12 +230,11 @@ public class InvoiceController {
             if(itemResult == null || itemResult.size()<1)
                 continue;
             Backorder bo = new Backorder();
-            List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
-            if(bos.size()>0)
-            {
-                bo = bos.get(0);
-            }
-
+//            List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
+//            if(bos.size()>0)
+//            {
+//                bo = bos.get(0);
+//            }
             // 仓库信息
             Item item = itemResult.get(0);
             // 订单量
@@ -248,6 +247,15 @@ public class InvoiceController {
             int needmore = 0;
             if(stock < 0 )
             {
+                if(StringUtils.isBlank(bo.getInvoiceNumber()))
+                {
+                    List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
+                    if(bos.size()>0)
+                    {
+                        bo = bos.get(0);
+                    }
+                }
+
                 if(StringUtils.isBlank(bo.getInvoiceNumber())){
                     bo.setId(sequence.getNextSequence("backorder"));
                     bo.setCustomName(invoice.getContactName());

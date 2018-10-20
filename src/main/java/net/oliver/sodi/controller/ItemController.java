@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -274,4 +275,37 @@ public class ItemController {
         return "OK";
     }
 
+    @GetMapping("/search")
+    @ResponseBody
+    public List<Item> search(String criteria,String operator,String criteriaValue )  {
+            if(operator.equals(">"))
+            {
+                if(criteria.equals("msoh"))
+                {
+                    return dao.findByMsohGreaterThanEqual(Double.parseDouble(criteriaValue));
+                }else if(criteria.equals("spm"))
+                {
+                    return dao.findBySpmGreaterThanEqual(Double.parseDouble(criteriaValue));
+                }
+            }else if(operator.equals("="))
+            {
+                if(criteria.equals("msoh"))
+                {
+                    return dao.findByMsohEquals(Double.parseDouble(criteriaValue));
+                }else if(criteria.equals("spm"))
+                {
+                    return dao.findBySpmEquals(Double.parseDouble(criteriaValue));
+                }
+            }else if(operator.equals("<"))
+            {
+                if(criteria.equals("msoh"))
+                {
+                    return dao.findByMsohLessThanEqual(Double.parseDouble(criteriaValue));
+                }else if(criteria.equals("spm"))
+                {
+                    return dao.findBySpmLessThanEqual(Double.parseDouble(criteriaValue));
+                }
+            }
+            return new ArrayList(0);
+    }
 }

@@ -125,8 +125,8 @@ public class ReportController {
     public void  backorder(HttpServletRequest request, HttpServletResponse response) throws Exception {
         response.setHeader("content-Type", "application/pdf");// 告诉浏览器用什么软件可以打开此文件
         response.setHeader("Content-Disposition", "inline;filename=backorder.pdf"); // 下载文件的默认名称
-       List<BackOrderReportEntry> entries = backOrderService.report();
-
+        List<BackOrderReportEntry> entries = backOrderService.report();
+        Collections.sort(entries);
         Document document = new Document();
         PdfWriter.getInstance(document, response.getOutputStream());
         generatePDFBackOrder(document,entries);
@@ -212,7 +212,12 @@ public class ReportController {
 
 
         List<BackOrderReportEntry> entries = backOrderService.report();
-
+//        Collections.sort(entries, new Comparator<BackOrderReportEntry>() {
+//            @Override
+//            public int compare(BackOrderReportEntry o1, BackOrderReportEntry o2) {
+//                return o1.get;
+//            }
+//        });
         Document document = new Document();
         PdfWriter.getInstance(document, response.getOutputStream());
         generateDeliveryPDF(document);
