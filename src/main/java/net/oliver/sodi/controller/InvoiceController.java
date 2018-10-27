@@ -359,4 +359,37 @@ public class InvoiceController {
         }
         return "{'status':'ok'}";
     }
+
+    @GetMapping("/check/{id}")
+    @ResponseBody
+    public String getItem(@PathVariable int id )  {
+
+        Invoice invoice = invoiceService.findById(id);
+
+        List<InvoiceItem> iItems = invoice.getItems();
+        StringBuffer sb = new StringBuffer();
+        for(InvoiceItem i : iItems)
+        {
+            String code = i.getInventoryItemCode();
+            int quantity = i.getQuantity();
+            List<Item> products = itemService.findByCode(code);
+
+            if(products.size()>0)
+            {
+                int stock  = products.get(0).getStock();
+                if(stock<quantity)
+                {
+                    int delta = quantity - stock;
+                    sb.append(delta +" X "+ code).append("<br/>");
+                }
+            }
+        }
+        if(sb.toString().length()<=1)
+        {
+            return "We have all of them!";
+        }else
+        {
+            return sb.toString();
+        }
+    }
 }

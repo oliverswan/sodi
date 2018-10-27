@@ -40,6 +40,13 @@ public class Backorder {
     }
 
 
+    public void removeItem(String code,int quantity)
+    {
+        Integer now = orders.get(code);
+        Integer realnow = now - quantity;
+        orders.put(code,realnow);
+    }
+
     public void setOrders(Map<String, Integer> orders) {
         this.orders = orders;
     }

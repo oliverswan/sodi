@@ -61,6 +61,7 @@ public class BackOrderController {
 
 
     @GetMapping("/addItem")
+    @ResponseBody
     public String save(String invoiceNumber,String customerName,String code,int quantity)  {
 //        bo.setId(sequence.getNextSequence("backorder"));
 //        service.save(bo);
@@ -80,6 +81,22 @@ public class BackOrderController {
             orders.put(code,quantity);
             newBO.setOrders(orders);
             service.save(newBO);
+        }
+        return "{'status':'ok'}";
+    }
+
+    @GetMapping("/removeItem")
+    @ResponseBody
+    public String remove(String invoiceNumber,String customerName,String code,int quantity)  {
+//        bo.setId(sequence.getNextSequence("backorder"));
+//        service.save(bo);
+
+        List<Backorder> list = service.findByInvoiceNumber(invoiceNumber);
+        if(list.size()>0)
+        {
+            Backorder exitBo = list.get(0);
+            exitBo.removeItem(code,quantity);
+            service.save(exitBo);
         }
         return "{'status':'ok'}";
     }
