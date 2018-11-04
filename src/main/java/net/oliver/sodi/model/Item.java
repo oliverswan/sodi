@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.List;
 
@@ -24,12 +25,65 @@ public class Item implements Comparable<Item> {
     private double msoh;
     private double weight;
     private double price;
-    private double cprice;
+
     private String orderNumber;
     private String accountCode;
     private int coming;
     private String location;
 
+    // 增加对利润的计算
+    private double cprice;// public price Eu
+    private double sprice;// SKA buy Price Eu
+    private double cpriceAu; // Sell price
+    private double spriceAu;// Landed price
+
+    private double value;// 库存总价值
+    private String profit;// 利润率
+
+
+    public void updateProfit(double cprice, double sprice, double rate,double freight, double duty)
+    {
+        if(cprice!=0)
+        this.cprice = cprice;
+        if(sprice!=0)
+        this.sprice = sprice;
+
+        this.cpriceAu = (this.cprice / rate)*freight*duty;
+        this.spriceAu = (this.sprice / rate)*freight*duty;
+
+        this.value = MathUtil.trimDouble(this.spriceAu * this.stock);//Landed price
+        double p = ((this.cpriceAu - this.price)/this.price)*100;
+        this.profit =MathUtil.trimDoubleString(p)  +"%";
+    }
+
+    public void reCalValue()
+    {
+        this.value = MathUtil.trimDouble(this.spriceAu * this.stock);//Landed price
+    }
+
+    public double getSprice() {
+        return sprice;
+    }
+
+    public void setSprice(double sprice) {
+        this.sprice = sprice;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public String getProfit() {
+        return profit;
+    }
+
+    public void setProfit(String profit) {
+        this.profit = profit;
+    }
 
     public String getLocation() {return location;}
     public void setLocation(String location) {this.location = location;}

@@ -36,6 +36,8 @@ public class MathUtil {
 //        System.out.println(MathUtil.trimDouble3(8.00));
         double a =(double)8/14;
         System.out.println(a);
-        System.out.println(String.valueOf(MathUtil.trimDouble(a)));
+
+
+        System.out.println(MathUtil.trimDouble(a));
     }
 }

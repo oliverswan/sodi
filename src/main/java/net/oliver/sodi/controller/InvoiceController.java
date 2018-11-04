@@ -321,6 +321,7 @@ public class InvoiceController {
         invoiceService.update(invoice);
         // 更新本单所有的库存
         itemService.save(inventoryItems);
+        ItemController.reSetFlag();
         return "{'status':'ok'}";
     }
 

@@ -5,6 +5,7 @@ import net.oliver.sodi.dao.IItemDao;
 import net.oliver.sodi.model.Item;
 import net.oliver.sodi.model.ItemResult;
 import net.oliver.sodi.model.SalesResult;
+import net.oliver.sodi.model.Statistic;
 import net.oliver.sodi.service.IItemService;
 import net.oliver.sodi.util.MathUtil;
 import net.oliver.sodi.util.MongoAutoidUtil;
@@ -37,6 +38,14 @@ public class ItemController {
 
     @Autowired
     MongoAutoidUtil sequence;
+
+    private static double totalValues = 0;
+    private static boolean recal = false;
+
+    public static void reSetFlag()
+    {
+        recal = true;
+    }
 
     @GetMapping("")
     @ResponseBody
@@ -307,5 +316,37 @@ public class ItemController {
                 }
             }
             return new ArrayList(0);
+    }
+
+    @GetMapping("/price")
+    @ResponseBody
+    public String price(double rate,double freight, double duty )  {
+
+        List<Item> all = service.findAll();
+        for(Item item : all)
+        {
+            item.updateProfit(0, 0,rate,freight, duty);
+            service.save(item);
+        }
+        return "ok";
+    }
+
+    @GetMapping("/statistic")
+    @ResponseBody
+    public Statistic statistic()  {
+        if(totalValues == 0 || recal == true)
+        {
+            totalValues = 0;
+            List<Item> all = service.findAll();
+            for(Item item : all)
+            {
+                item.reCalValue();
+                totalValues += item.getValue();
+            }
+            recal = false;
+        }
+        Statistic s = new Statistic();
+        s.setTotalvalues(totalValues);
+        return s;
     }
 }

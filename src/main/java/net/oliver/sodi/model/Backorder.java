@@ -44,7 +44,12 @@ public class Backorder {
     {
         Integer now = orders.get(code);
         Integer realnow = now - quantity;
-        orders.put(code,realnow);
+        if(realnow == 0)
+        {
+            orders.remove(code);
+        }else{
+            orders.put(code,realnow);
+        }
     }
 
     public void setOrders(Map<String, Integer> orders) {
