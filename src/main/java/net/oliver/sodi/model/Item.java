@@ -20,6 +20,23 @@ public class Item implements Comparable<Item> {
     private int soldThisYear;// sold
     private int stock;// 当前存货
     private List<Integer> soldHistory;
+
+    public double getCpriceAu() {
+        return cpriceAu;
+    }
+
+    public void setCpriceAu(double cpriceAu) {
+        this.cpriceAu = cpriceAu;
+    }
+
+    public double getSpriceAu() {
+        return spriceAu;
+    }
+
+    public void setSpriceAu(double spriceAu) {
+        this.spriceAu = spriceAu;
+    }
+
     // 需要一个变量指明过去多少个月的
     private double spm;// 平均每月销售量
     private double msoh;
@@ -48,8 +65,8 @@ public class Item implements Comparable<Item> {
         if(sprice!=0)
         this.sprice = sprice;
 
-        this.cpriceAu = (this.cprice / rate)*freight*duty;
-        this.spriceAu = (this.sprice / rate)*freight*duty;
+        this.cpriceAu = MathUtil.trimDouble((this.cprice / rate)*freight*duty);
+        this.spriceAu = MathUtil.trimDouble((this.sprice / rate)*freight*duty);
 
         this.value = MathUtil.trimDouble(this.spriceAu * this.stock);//Landed price
         double p = ((this.cpriceAu - this.price)/this.price)*100;
