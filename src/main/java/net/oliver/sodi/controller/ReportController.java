@@ -350,7 +350,7 @@ public class ReportController {
         }
 
         colNames[month+1]="stock";
-        colNames[month+2]="Last "+month+ "Av Sales";
+        colNames[month+2]="Last "+month+ " Month ave";
         colNames[month+3]="Msoh";
         colNames[month+4]="On order";
         colNames[month+5]="Inv Value";

@@ -349,4 +349,17 @@ public class ItemController {
         s.setTotalvalues(totalValues);
         return s;
     }
+
+    @GetMapping("/restock")
+    @ResponseBody
+    public String restock()  {
+        List<Item> all = service.findAll();
+        for(Item item : all)
+        {
+            int stock = item.getStock();
+            item.setStock(stock);
+        }
+        dao.save(all);
+        return "ok";
+    }
 }
