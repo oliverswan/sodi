@@ -350,6 +350,21 @@ public class ItemController {
         return s;
     }
 
+    @GetMapping("/recaltotalvalues")
+    @ResponseBody
+    public String recaltotalvalues()  {
+
+            List<Item> all = service.findAll();
+            for(Item item : all)
+            {
+                item.reCalValue();
+                totalValues += item.getValue();
+            }
+
+        return "ok";
+    }
+
+    //  restock 主要是重新计算msoh
     @GetMapping("/restock")
     @ResponseBody
     public String restock()  {
