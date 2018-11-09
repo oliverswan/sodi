@@ -3,6 +3,8 @@ package net.oliver.sodi.service.impl;
 import net.oliver.sodi.dao.IBackOrderDao;
 import net.oliver.sodi.model.BackOrderReportEntry;
 import net.oliver.sodi.model.Backorder;
+import net.oliver.sodi.model.Invoice;
+import net.oliver.sodi.model.InvoiceItem;
 import net.oliver.sodi.service.IBackorderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,5 +68,40 @@ public class BackOrderServiceImpl implements IBackorderService {
     @Override
     public Backorder findById(int id) {
         return dao.findOne(id);
+    }
+
+    @Override
+    public void processInvoice(Invoice invoice) {
+        List<Backorder> backorders = dao.findByCustomName(invoice.getContactName());
+
+
+        for(InvoiceItem item : invoice.getItems())
+        {
+            String code = item.getInventoryItemCode();
+            int quantity = item.getQuantity();
+
+            // 需要优化 从backorder中找到 需求修改的code
+            for(Backorder b : backorders)
+            {
+                int left = b.removeItem(code,quantity);
+                if(left<0)
+                {
+                    quantity = -left;
+                }else{
+                    break;
+                }
+            }
+        }
+
+        Iterator<Backorder> it = backorders.iterator();
+        while(it.hasNext()){
+            Backorder x = it.next();
+            if(x.getOrders().size()==0){
+                it.remove();
+                dao.delete(x);
+            }
+        }
+        if(backorders.size()>0)
+            dao.save(backorders);
     }
 }

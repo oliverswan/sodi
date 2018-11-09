@@ -6,6 +6,7 @@ import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.model.InvoicesResult;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.util.MongoAutoidUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -29,8 +30,10 @@ public class InvoiceServiceImpl implements IInvoiceService {
 
     @Override
     public void save(Invoice invoice) {
-        invoice.setReference(sequence.getNextSequence("invoiceReference")+"");
-        invoice.setInvoiceNumber(Const.InvoiceNumerPrefix+sequence.getNextSequence("invoiceNumber"));
+        if(StringUtils.isBlank(invoice.getReference()))
+            invoice.setReference(sequence.getNextSequence("invoiceReference")+"");
+        if(StringUtils.isBlank(invoice.getInvoiceNumber()))
+            invoice.setInvoiceNumber(Const.InvoiceNumerPrefix+sequence.getNextSequence("invoiceNumber"));
         dao.save(invoice);
     }
 

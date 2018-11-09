@@ -30,6 +30,7 @@ public class InvoiceController {
     @Autowired
     IItemService itemService;
 
+
     @Autowired
     MongoAutoidUtil sequence;
 
@@ -222,6 +223,7 @@ public class InvoiceController {
         // 是否缺货
         StringBuffer osb = new StringBuffer();
         boolean importToXero = false;
+        Backorder bo = new Backorder();
         for(InvoiceItem iitem : invoice.getItems())
         {
             if(iitem.getInventoryItemCode().equals("SHIP"))
@@ -229,7 +231,7 @@ public class InvoiceController {
             List<Item> itemResult  = itemService.findByCode(iitem.getInventoryItemCode());
             if(itemResult == null || itemResult.size()<1)
                 continue;
-            Backorder bo = new Backorder();
+
 //            List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
 //            if(bos.size()>0)
 //            {
@@ -247,20 +249,20 @@ public class InvoiceController {
             int needmore = 0;
             if(stock < 0 )
             {
+                // 更新还是创建backorder
                 if(StringUtils.isBlank(bo.getInvoiceNumber()))
                 {
                     List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
                     if(bos.size()>0)
                     {
                         bo = bos.get(0);
+                    }else{
+                        bo.setId(sequence.getNextSequence("backorder"));
+                        bo.setCustomName(invoice.getContactName());
+                        bo.setInvoiceNumber(invoice.getInvoiceNumber());
                     }
                 }
 
-                if(StringUtils.isBlank(bo.getInvoiceNumber())){
-                    bo.setId(sequence.getNextSequence("backorder"));
-                    bo.setCustomName(invoice.getContactName());
-                    bo.setInvoiceNumber(invoice.getInvoiceNumber());
-                }
                 if(item.getStock()>0)
                 {
                     needmore = quantity - item.getStock();
@@ -286,13 +288,6 @@ public class InvoiceController {
             }
             item.setSoldThisYear(sold);
             inventoryItems.add(item);
-
-            if(!StringUtils.isBlank(bo.getInvoiceNumber()))
-            {
-                backorderService.save(bo);
-//                    osb.append(" on back order.");
-                invoice.setOrderNote(osb.toString());
-            }
         }
         invoice.reCalculate();
         if(!importToXero)
@@ -302,7 +297,6 @@ public class InvoiceController {
             oldnote.append("No stock,not shipped!");
             invoice.setOrderNote(oldnote.toString());
         }
-
 
         // 导入Xero
         if(importToXero) {
@@ -316,6 +310,11 @@ public class InvoiceController {
                 logger.info(str);
                 return  "{'status':'fail','msg':"+e.getMessage()+" "+e.getClass().getCanonicalName()+"}";
             }
+        }
+        if(!StringUtils.isBlank(bo.getInvoiceNumber()))
+        {
+            backorderService.save(bo);
+            invoice.setOrderNote(osb.toString());
         }
         // 保存invoice
         invoiceService.update(invoice);
@@ -332,6 +331,21 @@ public class InvoiceController {
         return x;
     }
 
+
+
+    @RequestMapping(value = { "/approveBackorder" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String approveBackorder(@RequestBody Invoice invoice)  {
+        // 首先处理BackOrder
+        try {
+            backorderService.processInvoice( invoice);
+        }catch (Exception e)
+        {
+            return "{'status':'fail'}";
+        }
+//        String x = this.approveInvoice(invoice);
+        return  "{'status':'ok'}";
+    }
     @RequestMapping(value = { "/approveMulti" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
     @ResponseBody
     public String approviceS(@RequestBody List<Invoice> invoices)  {

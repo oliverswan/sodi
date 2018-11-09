@@ -39,17 +39,24 @@ public class Backorder {
         return orders;
     }
 
-
-    public void removeItem(String code,int quantity)
+    // 返回还没处理完的个数
+    public int removeItem(String code,int quantity)
     {
         Integer now = orders.get(code);
+        if(now == null )
+            return -quantity;
+
+        //  如果这个单子记录5个，要处理7个，那么就要返回剩下的
+        // -2 = 5-7 这个单子归0 然后返回 -2
         Integer realnow = now - quantity;
-        if(realnow == 0)
+        if(realnow <= 0)
         {
             orders.remove(code);
         }else{
             orders.put(code,realnow);
         }
+
+        return realnow;
     }
 
     public void setOrders(Map<String, Integer> orders) {
