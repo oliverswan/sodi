@@ -104,4 +104,9 @@ public class BackOrderServiceImpl implements IBackorderService {
         if(backorders.size()>0)
             dao.save(backorders);
     }
+
+    @Override
+    public void delete(Backorder bo) {
+        dao.delete(bo);
+    }
 }

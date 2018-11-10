@@ -331,6 +331,39 @@ public class InvoiceController {
         return x;
     }
 
+    @RequestMapping(value = { "/undo" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String undo(@RequestBody Invoice invoice)  {
+
+        // 0 删除backorder
+        List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
+
+        if(bos.size()>0)
+        {
+            for(Backorder bo : bos)
+            {
+                backorderService.delete(bo);
+            }
+        }
+        // 1 恢复库存
+        List<Item> result = new ArrayList<Item>();
+        for(InvoiceItem iitem : invoice.getItems())
+        {
+            List<Item> all = itemService.findByCode(iitem.getInventoryItemCode());
+            if(all.size()>0)
+            {
+                all.get(0).setStock(iitem.getQuantity()+all.get(0).getStock());
+                result.add(all.get(0));
+            }
+        }
+        if(result.size()>0)
+            itemService.save(result);
+
+        // 2 返回draft
+        invoice.setStatus(0);
+        invoiceService.save(invoice);
+        return  "{'status':'ok'}";
+    }
 
 
     @RequestMapping(value = { "/approveBackorder" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")

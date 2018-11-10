@@ -17,4 +17,5 @@ public interface IBackorderService {
     public Backorder findById(int id);
 
     public void processInvoice(Invoice invoice);
+    public void delete(Backorder bo);
 }
