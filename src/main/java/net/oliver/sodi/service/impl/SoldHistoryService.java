@@ -24,6 +24,11 @@ public class SoldHistoryService implements ISoldHistoryService {
     }
 
     @Override
+    public void save(List<SoldHistory> sh) {
+        dao.save(sh);
+    }
+
+    @Override
     public void addSoldTothisMonth(String customer,String code,int month,int quantity) {
         // 0 find oderhistory
             List<SoldHistory> list = dao.findByCode(code);
@@ -38,6 +43,23 @@ public class SoldHistoryService implements ISoldHistoryService {
             }
             sh.updateSoldQuantity(customer,month,quantity);
             this.save(sh);
+    }
+
+    @Override
+    public SoldHistory getSoldHistory(String customer, String code, int month, int quantity) {
+        // 0 find oderhistory
+        List<SoldHistory> list = dao.findByCode(code);
+        SoldHistory sh = null;
+        if(list.size()>0)
+        {
+            sh = list.get(0);
+        }else{
+            sh= new SoldHistory();
+            sh.setId(sequence.getNextSequence("soldhistory"));
+            sh.setCode(code);
+        }
+        sh.updateSoldQuantity(customer,month,quantity);
+        return sh;
     }
 
     @Override

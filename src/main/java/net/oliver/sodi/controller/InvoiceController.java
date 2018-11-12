@@ -27,9 +27,9 @@ public class InvoiceController {
 
     @Autowired
     IInvoiceService invoiceService;
+
     @Autowired
     IItemService itemService;
-
 
     @Autowired
     MongoAutoidUtil sequence;
@@ -219,18 +219,32 @@ public class InvoiceController {
     {
         List<Invoice> xeroList = new ArrayList<Invoice>();
         List<Item> inventoryItems = new ArrayList<Item>();
+        List<SoldHistory> soldHistories = new ArrayList<SoldHistory>();
         invoice.setStatus(1);
         // 是否缺货
         StringBuffer osb = new StringBuffer();
         boolean importToXero = false;
         Backorder bo = new Backorder();
+
         for(InvoiceItem iitem : invoice.getItems())
         {
             if(iitem.getInventoryItemCode().equals("SHIP"))
                 continue;
+            Item item= null;
             List<Item> itemResult  = itemService.findByCode(iitem.getInventoryItemCode());
             if(itemResult == null || itemResult.size()<1)
-                continue;
+            {
+                // 新增item
+                item = new Item();
+                item.setCode(iitem.getInventoryItemCode());
+                item.setId(sequence.getNextSequence("item"));
+                item.setStock(0);
+                item.setAccountCode("4000");
+                itemService.save(item);
+            }else{
+                item = itemResult.get(0);
+            }
+//                continue;
 
 //            List<Backorder> bos = backorderService.findByInvoiceNumber(invoice.getInvoiceNumber());
 //            if(bos.size()>0)
@@ -238,7 +252,7 @@ public class InvoiceController {
 //                bo = bos.get(0);
 //            }
             // 仓库信息
-            Item item = itemResult.get(0);
+
             // 订单量
             int quantity = iitem.getQuantity();
             // 今年卖出的最新值
@@ -284,7 +298,8 @@ public class InvoiceController {
             if(iitem.getQuantity()>0 ) {
                 importToXero = true;
                 // 统计这个item 当月销售
-                soldHistoryService.addSoldTothisMonth(invoice.getContactName(),iitem.getInventoryItemCode(), SystemStatus.getCurrentYM(), iitem.getQuantity());
+                SoldHistory sh = soldHistoryService.getSoldHistory(invoice.getContactName(),iitem.getInventoryItemCode(), SystemStatus.getCurrentYM(), iitem.getQuantity());
+                soldHistories.add(sh);
             }
             item.setSoldThisYear(sold);
             inventoryItems.add(item);
@@ -296,6 +311,14 @@ public class InvoiceController {
             oldnote.append("\r\n");
             oldnote.append("No stock,not shipped!");
             invoice.setOrderNote(oldnote.toString());
+
+            if(!StringUtils.isBlank(bo.getInvoiceNumber()))
+            {
+                backorderService.save(bo);
+                invoice.setOrderNote(osb.toString());
+            }
+
+            return "{'status':'not imported'}";
         }
 
         // 导入Xero
@@ -311,6 +334,9 @@ public class InvoiceController {
                 return  "{'status':'fail','msg':"+e.getMessage()+" "+e.getClass().getCanonicalName()+"}";
             }
         }
+        // 保存销售历史
+        soldHistoryService.save(soldHistories);
+        // 保存backorder
         if(!StringUtils.isBlank(bo.getInvoiceNumber()))
         {
             backorderService.save(bo);
@@ -320,6 +346,7 @@ public class InvoiceController {
         invoiceService.update(invoice);
         // 更新本单所有的库存
         itemService.save(inventoryItems);
+        // 重新清点库存额度
         ItemController.reSetFlag();
         return "{'status':'ok'}";
     }
