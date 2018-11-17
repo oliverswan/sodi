@@ -96,14 +96,31 @@ public class JsoupUtil {
             }
 
             Elements itemTr = doc.select("tr:contains(Product Name)");
-
+            double discount = 1;
+            double gst = 1;
+//            if(this.contactName === "Baykarts limited"||this.contactName === "Formula Challenge Limited"||this.contactName === "Pro Karts"||this.contactName === "Daytona Raceway")
+            if(contact.getContactName().equals("Baykarts limited")||contact.getContactName().equals("Formula Challenge Limited")
+                    ||contact.getContactName().equals("Pro Karts")||contact.getContactName().equals("Daytona Raceway"))
+            {
+                gst =0;
+            }
+            if(contact.getContactName().equals("The Kart Centre")||contact.getContactName().equals("Ultimate Karting Sydney"))
+            {
+                discount = MathUtil.trimDouble(0.80);
+            }
             Elements itemTrs =itemTr.get(2).siblingElements();
             for (int i = 0; i < itemTrs.size() - 2; i++) {
                 Elements tds = itemTrs.get(i).select("td");
                 InvoiceItem iItem = new InvoiceItem();
-                itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem);
+                itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,1,1);
                 invoice.addItem(iItem);
             }
+            // 自动添加shiping fee
+            InvoiceItem shipItem = new InvoiceItem();
+            itemUtil.fillInvoiceItem("SHIP", 1, shipItem,1,1);
+            shipItem.setUnitAmount(0);
+            invoice.addItem(shipItem);
+
             invoice.setMoblie(contact.getMobile());
             invoice.setTel(contact.getPhone());
             invoice.setPocity(contact.getPoCity());

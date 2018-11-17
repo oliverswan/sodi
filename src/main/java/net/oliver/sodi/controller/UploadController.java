@@ -116,7 +116,7 @@ public class UploadController {
                     item.setProduct_subtotal_discount(strArr[28]);
                     item.setProduct_quantity(strArr[29]);
                     item.setTotalamount(item.getUnitAmount().multiply(new BigDecimal(item.getQuantity() )).multiply(new BigDecimal(1.1)));
-                    item.reCalculate();
+                    item.reCalculate(1);
                     invoice.addItem(item);
                 }
             }

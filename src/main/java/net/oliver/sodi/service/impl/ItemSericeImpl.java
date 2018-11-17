@@ -54,6 +54,14 @@ public class ItemSericeImpl implements IItemService {
     }
 
     @Override
+    public List<Item> findForDel1() {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("stock").is(0).andOperator(Criteria.where("weight").lt(3)));//.gt(20));
+        return mongoTemplate.find(query,Item.class);
+    }
+
+
+    @Override
     public List<Item> findItemAutoComplete(String criteria) {
 
 
@@ -93,5 +101,17 @@ public class ItemSericeImpl implements IItemService {
             dao.save(item);
         }
         return true;
+    }
+
+    @Override
+    public void delete(List<Item> l) {
+        dao.delete(l);
+    }
+
+    @Override
+    public List<Item> findForLandedZero() {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("spriceAu").is(0));
+        return mongoTemplate.find(query,Item.class);
     }
 }

@@ -353,13 +353,14 @@ public class ItemController {
     @GetMapping("/recaltotalvalues")
     @ResponseBody
     public String recaltotalvalues()  {
-
+            totalValues=0;
             List<Item> all = service.findAll();
             for(Item item : all)
             {
                 item.reCalValue();
                 totalValues += item.getValue();
             }
+            service.save(all);
 
         return "ok";
     }
@@ -375,6 +376,25 @@ public class ItemController {
             item.setStock(stock);
         }
         dao.save(all);
+        return "ok";
+    }
+
+    @GetMapping("/del1")
+    @ResponseBody
+    public String del1()  {
+        List<Item> items = service.findForDel1();
+        service.delete(items);
+        return "ok";
+    }
+
+    @GetMapping("/landed")
+    @ResponseBody
+    public String landed()  {
+        List<Item> items = service.findForLandedZero();
+        for(Item item : items)
+        {
+            System.out.println(item.getCode());
+        }
         return "ok";
     }
 }

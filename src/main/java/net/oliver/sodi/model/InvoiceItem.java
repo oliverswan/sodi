@@ -59,12 +59,12 @@ public class InvoiceItem {
         this.gsts = gsts;
     }
 
-    public void reCalculate()
+    public void reCalculate(double gstdiscount)
     {
         this.totalamount = this.UnitAmount.multiply(new BigDecimal(this.Quantity));
         this.totalamount =  this.totalamount.setScale(2,   BigDecimal.ROUND_HALF_UP);
 
-        this.gst = this.totalamount.multiply(new BigDecimal("0.1"));
+        this.gst = this.totalamount.multiply(new BigDecimal("0.1")).multiply(new BigDecimal(gstdiscount));
         this.subtotal =this.totalamount.add(this.gst);
 
         this.totalamounts = MathUtil.df.format(this.totalamount);

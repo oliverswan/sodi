@@ -188,7 +188,7 @@ public class InvoiceController {
                     item.setStock(0);
                     // 更新订单item的数量
                     iitem.setQuantity(iitem.getQuantity() - needmore);
-                    iitem.reCalculate();
+                    iitem.reCalculate(1);
                 }else{
                     // 更新仓库数量
                     item.setStock(stock); // 更新售出后的库存
@@ -290,7 +290,7 @@ public class InvoiceController {
                 item.setStock(0);
                 // 更新订单item的数量
                 iitem.setQuantity(iitem.getQuantity() - needmore);
-                iitem.reCalculate();
+                iitem.reCalculate(1);
             }else{
                 // 更新售出后的库存
                 item.setStock(stock);

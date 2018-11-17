@@ -15,7 +15,7 @@ public class ItemUtil {
     @Autowired
     static IItemService itemService;
 
-    public static void fillInvoiceItem(String code, int quantity,InvoiceItem target)
+    public static void fillInvoiceItem(String code, int quantity,InvoiceItem target,double discount,double gst)
     {
         if(itemService == null)
             itemService = SodiApplicationListener.applicationContext.getBean(IItemService.class);
@@ -43,13 +43,17 @@ public class ItemUtil {
 
             target.setDescription(item.getName());
             target.setUnitAmount(item.getPrice());
+            if(discount != 1)
+            {
+                target.setUnitAmount(MathUtil.trimDouble(item.getPrice()*discount));
+            }
             target.setTaxType("GST on Income");
 //            target.setTotalamount(target.getQuantity()*target.getUnitAmount());
 //            String GL = SodiConfig.getValue("code")==null?"4000":SodiConfig.getValue("code");
 //            target.setAccountCode(GL);
             // 改为从Item获取
             target.setAccountCode(item.getAccountCode());
-            target.reCalculate();
+            target.reCalculate(gst);
         }
     }
 }

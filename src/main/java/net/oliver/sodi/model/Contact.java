@@ -3,6 +3,8 @@ package net.oliver.sodi.model;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
+
 @Document
 public class Contact {
     @Indexed

@@ -63,7 +63,7 @@ public class Item implements Comparable<Item> {
         if(cprice!=0)
         this.cprice = cprice;
         if(sprice!=0)
-        this.sprice = sprice;
+        this.sprice = sprice;//Landed price
 
         this.cpriceAu = MathUtil.trimDouble((this.cprice / rate)*freight*duty);
         this.spriceAu = MathUtil.trimDouble((this.sprice / rate)*freight*duty);
