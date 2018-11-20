@@ -70,9 +70,9 @@ public class XeroUtil {
                     item.setQuantity(new BigDecimal(sodiItem.getQuantity()));
                     item.setDescription(sodiItem.getDescription());
                     item.setTaxType("OUTPUT");//这里使用内部代码而非显示内容，澳大利亚的是GST 10%
-//                    item.setTaxAmount(new BigDecimal(sodiItem.getUnitAmount()*sodiItem.getQuantity()*0.1));
-                    item.setAccountCode(sodiItem.getAccountCode());
                     item.setLineAmount(sodiItem.getUnitAmount().multiply(new BigDecimal(sodiItem.getQuantity())));
+                    item.setTaxAmount(item.getLineAmount().multiply(new BigDecimal(0.1)));
+                    item.setAccountCode(sodiItem.getAccountCode());
                     items.add(item);
                 }
                 in.setLineItems(items);
@@ -99,6 +99,7 @@ public class XeroUtil {
     public static void createInvoice(net.oliver.sodi.model.Invoice sodiInvoice) throws Exception {
 //        try {
                 Invoice in = new Invoice();
+                in.getLineAmountTypes().clear();
                 in.getLineAmountTypes().add("Exclusive");
                 in.setType(InvoiceType.ACCREC);
                 in.setDate(dateFormat.parse(sodiInvoice.getInvoiceDate()));
@@ -110,9 +111,10 @@ public class XeroUtil {
                     item.setQuantity(new BigDecimal(sodiItem.getQuantity()));
                     item.setDescription(sodiItem.getDescription());
                     item.setTaxType("OUTPUT");//这里使用内部代码而非显示内容，澳大利亚的是GST 10%
-//                    item.setTaxAmount(new BigDecimal(sodiItem.getUnitAmount()*sodiItem.getQuantity()*0.1));
-                    item.setAccountCode(sodiItem.getAccountCode());
                     item.setLineAmount(sodiItem.getUnitAmount().multiply(new BigDecimal(sodiItem.getQuantity())));
+                    item.setTaxAmount(item.getLineAmount().multiply(new BigDecimal(0.1)));
+                    item.setAccountCode(sodiItem.getAccountCode());
+
                     items.add(item);
                 }
                 in.setLineItems(items);

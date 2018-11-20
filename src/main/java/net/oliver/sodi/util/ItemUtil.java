@@ -52,6 +52,11 @@ public class ItemUtil {
 //            String GL = SodiConfig.getValue("code")==null?"4000":SodiConfig.getValue("code");
 //            target.setAccountCode(GL);
             // 改为从Item获取
+            if("SHIP".equals(code))
+            {
+                target.setUnitAmount(0);
+                target.setQuantity(1);
+            }
             target.setAccountCode(item.getAccountCode());
             target.reCalculate(gst);
         }

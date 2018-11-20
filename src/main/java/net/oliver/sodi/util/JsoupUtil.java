@@ -112,13 +112,12 @@ public class JsoupUtil {
             for (int i = 0; i < itemTrs.size() - 2; i++) {
                 Elements tds = itemTrs.get(i).select("td");
                 InvoiceItem iItem = new InvoiceItem();
-                itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,1,1);
+                itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,discount,gst);
                 invoice.addItem(iItem);
             }
             // 自动添加shiping fee
             InvoiceItem shipItem = new InvoiceItem();
             itemUtil.fillInvoiceItem("SHIP", 1, shipItem,1,1);
-            shipItem.setUnitAmount(0);
             invoice.addItem(shipItem);
 
             invoice.setMoblie(contact.getMobile());
