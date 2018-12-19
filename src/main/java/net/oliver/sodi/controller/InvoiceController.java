@@ -288,12 +288,14 @@ public class InvoiceController {
                 // 添加BackOrder的数量
                 bo.addItem(item.getCode(),needmore);
                 item.setStock(0);
+                item.reCalValue();
                 // 更新订单item的数量
                 iitem.setQuantity(iitem.getQuantity() - needmore);
                 iitem.reCalculate(1);
             }else{
                 // 更新售出后的库存
                 item.setStock(stock);
+                item.reCalValue();
             }
             if(iitem.getQuantity()>0 ) {
                 importToXero = true;
@@ -466,5 +468,31 @@ public class InvoiceController {
         {
             return sb.toString();
         }
+    }
+
+    @GetMapping("/gobo/{id}")
+    @ResponseBody
+    public String gobo(@PathVariable int id )  {
+
+        Invoice invoice = invoiceService.findById(id);
+
+        List<InvoiceItem> iItems = invoice.getItems();
+        StringBuffer sb = new StringBuffer();
+        Backorder bo = new Backorder();
+        bo.setId(sequence.getNextSequence("backorder"));
+        bo.setCustomName(invoice.getContactName());
+        bo.setInvoiceNumber(invoice.getInvoiceNumber());
+        for(InvoiceItem i : iItems)
+        {
+            String code = i.getInventoryItemCode();
+            if(!code.equals("SHIP"))
+            {
+                int quantity = i.getQuantity();
+                bo.addItem(code,quantity);
+            }
+        }
+
+        backorderService.save(bo);
+        return "{'status':'ok'}";
     }
 }

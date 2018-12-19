@@ -112,7 +112,13 @@ public class JsoupUtil {
             for (int i = 0; i < itemTrs.size() - 2; i++) {
                 Elements tds = itemTrs.get(i).select("td");
                 InvoiceItem iItem = new InvoiceItem();
-                itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,discount,gst);
+                // TKC 轮胎不打折
+                if(contact.getContactName().equals("The Kart Centre")&&tds.get(0).text().trim().startsWith("TY"))
+                {
+                    itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,1,gst);
+                }else{
+                    itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,discount,gst);
+                }
                 invoice.addItem(iItem);
             }
             // 自动添加shiping fee

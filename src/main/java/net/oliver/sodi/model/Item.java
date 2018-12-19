@@ -50,7 +50,7 @@ public class Item implements Comparable<Item> {
 
     // 增加对利润的计算
     private double cprice;// public price Eu
-    private double sprice;// SKA buy Price Eu
+    private double sprice;// 代理进货价 SKA buy Price Eu
     private double cpriceAu; // Sell price
     private double spriceAu;// Landed price
 
