@@ -3,17 +3,20 @@ package net.oliver.sodi.service.impl;
 import net.oliver.sodi.config.Const;
 import net.oliver.sodi.dao.IInvoiceDao;
 import net.oliver.sodi.model.Invoice;
+import net.oliver.sodi.model.InvoiceItem;
 import net.oliver.sodi.model.InvoicesResult;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.util.MongoAutoidUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -49,9 +52,9 @@ public class InvoiceServiceImpl implements IInvoiceService {
     }
 
     @Override
-    public List<Invoice> findAll() {
-
-        return dao.findAll();
+    public Iterable<Invoice> findAll() {
+        Sort sort = new Sort(Sort.Direction.DESC, "_id");
+        return dao.findAll(sort);
     }
 
     @Override
@@ -59,6 +62,7 @@ public class InvoiceServiceImpl implements IInvoiceService {
         InvoicesResult result = new InvoicesResult();
 //        List<Invoice> r3 = new ArrayList<Invoice>();
         //TODO 分析如何将Page转为List
+
         List<Invoice> result2 =  dao.findByStatus(1,request);
 //        result.setMessage(String.valueOf(result2.getTotalElements()));
 //        result2.forEach(new Consumer<Invoice>() {
@@ -103,5 +107,29 @@ public class InvoiceServiceImpl implements IInvoiceService {
         Criteria c2 = Criteria.where("invoiceNumber").is(InvoiceNumber);
         Query query = new Query(new Criteria().orOperator(c1,c2));
         return mongoTemplate.find(query,Invoice.class);
+    }
+
+    @Override
+    public List<Invoice> findInvoiceByCode(int id, String code) {
+
+
+        Criteria c1 = Criteria.where("id").gt(id);
+        Query query = new Query(c1);
+        List<Invoice> ins = mongoTemplate.find(query,Invoice.class);
+        List result = new ArrayList();
+        for(Invoice in : ins)
+        {
+            List<InvoiceItem> iitems = in.getItems();
+            for(InvoiceItem item: iitems)
+            {
+                if(item.getInventoryItemCode().equals(code))
+                {
+                    result.add(in);
+                    break;
+                }
+            }
+
+        }
+        return result;
     }
 }

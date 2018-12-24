@@ -74,11 +74,12 @@ public class InvoiceController {
     @ResponseBody
 //    url = url + "pageNum=" + this.pageNum + '&pageSize=' + this.pageSize
     public InvoicesResult getAll(int pageNum, int pageSize)  {
+        Sort sort = new Sort(Sort.Direction.DESC, "_id");
         return invoiceService.findAll(buildPageRequest(pageNum,pageSize,""));
     }
 
     private PageRequest buildPageRequest(int pageNumber, int pageSize, String sortType) {
-        Sort sort =  new Sort(Sort.Direction.ASC, "_id");;
+        Sort sort =  new Sort(Sort.Direction.DESC, "_id");
 //        if ("auto".equals(sortType)) {
 //            sort = new Sort(Sort.Direction.ASC, "_id");
 //        }
@@ -422,6 +423,13 @@ public class InvoiceController {
     @ResponseBody
     public List<Invoice> findLikeNameOrNumber(String customerName,String invoiceNumber,int pageNum,int pageSize)  {
         return invoiceService.findLikeNameOrNumber(customerName,invoiceNumber);
+    }
+
+
+    @GetMapping("/querybycode")
+    @ResponseBody
+    public List<Invoice> querybycode(int id,String code)  {
+        return invoiceService.findInvoiceByCode(id,code);
     }
 
     @RequestMapping(value = { "/xero" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")

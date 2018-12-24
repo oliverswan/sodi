@@ -12,7 +12,7 @@ public interface IInvoiceService {
     void update(Invoice invoice);
     void saveInvoices(List<Invoice> list);
 
-    List<Invoice> findAll();
+    Iterable<Invoice> findAll();
 
     InvoicesResult findAll(PageRequest request);
 
@@ -24,5 +24,5 @@ public interface IInvoiceService {
     Invoice findByOrderNumber(String number);
 
     List<Invoice> findLikeNameOrNumber(String customerName,String invoiceNumber);
-
+    public List<Invoice> findInvoiceByCode(int id, String code);
 }
