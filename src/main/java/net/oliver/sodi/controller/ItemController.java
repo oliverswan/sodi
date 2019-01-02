@@ -1,14 +1,14 @@
 package net.oliver.sodi.controller;
 
+import com.itextpdf.text.pdf.PdfWriter;
 import com.opencsv.CSVReader;
 import net.oliver.sodi.dao.IItemDao;
-import net.oliver.sodi.model.Item;
-import net.oliver.sodi.model.ItemResult;
-import net.oliver.sodi.model.SalesResult;
-import net.oliver.sodi.model.Statistic;
+import net.oliver.sodi.model.*;
 import net.oliver.sodi.service.IItemService;
+import net.oliver.sodi.service.ISoldHistoryService;
 import net.oliver.sodi.util.MathUtil;
 import net.oliver.sodi.util.MongoAutoidUtil;
+import net.oliver.sodi.util.SystemStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,10 +18,12 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping(value = "/api/items")
@@ -38,6 +40,9 @@ public class ItemController {
 
     @Autowired
     MongoAutoidUtil sequence;
+
+    @Autowired
+    ISoldHistoryService soldHistoryService;
 
     private static double totalValues = 0;
     private static boolean recal = false;
@@ -396,5 +401,49 @@ public class ItemController {
             System.out.println(item.getCode());
         }
         return "ok";
+    }
+
+    // 销售历史报告
+    @RequestMapping(value = "/updatesales/{month}",method = RequestMethod.GET)
+    public void  salehistory( @PathVariable int month/*@RequestParam int num*/) throws Exception {
+        // 0.根据参数
+        List<SoldHistory> result = soldHistoryService.findAllForSalesHistory(month);
+        List<String> ls = SystemStatus.getLastMonthLabel(month);
+        List<Item> updates = new ArrayList<Item>();
+        for(SoldHistory en : result)
+        {
+            Map<Integer,Integer> curHis = en.getHis();
+
+            int total = 0;
+            for(int x=1;x<=month;x++)
+            {
+                Integer v = curHis.get(Integer.parseInt(ls.get(x-1)));
+                if(v == null)
+                    v = 0;
+
+                total+=v;
+            }
+            int av = total/month;
+
+            List<Item> its = service.findByCode(en.getCode());
+
+            if(its.size()>0)
+            {
+                Item item = its.get(0);
+                // av
+                item.setSpm(av);
+                // mosh
+                if(item.getStock()<=0 || av == 0)
+                {
+                    item.setMsoh(0);
+                }else{
+                    item.setMsoh(its.get(0).getStock()/av);//msoh
+                }
+                updates.add(item);
+                System.out.println(item.getCode()+"   "+item.getSpm());
+            }
+        }
+        service.save(updates);
+
     }
 }

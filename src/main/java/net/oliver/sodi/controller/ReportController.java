@@ -9,6 +9,7 @@ import net.oliver.sodi.service.IItemService;
 import net.oliver.sodi.service.ISoldHistoryService;
 import net.oliver.sodi.util.AlternatingBackground;
 import net.oliver.sodi.util.InvoiceGenerator;
+import net.oliver.sodi.util.MathUtil;
 import net.oliver.sodi.util.SystemStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -306,8 +307,8 @@ public class ReportController {
         response.setHeader("Content-Disposition", "inline;filename=reorder.pdf"); // 下载文件的默认名称
         SystemStatus.getCurrentYM();
 
-        if(month > SystemStatus.getCurrentM())
-            month =  SystemStatus.getCurrentM();
+//        if(month > SystemStatus.getCurrentM())
+//            month =  SystemStatus.getCurrentM();
         // 0.根据参数
         List<SoldHistory> result = soldHistoryService.findAllForSalesHistory(month);
         Document document = new Document();
@@ -319,6 +320,9 @@ public class ReportController {
         document.open();
         // seq,code,desc,stock,spm,reorder,cost,margin
         // code stock avsales msoh coming invvalue
+
+        List<String> ls = SystemStatus.getLastMonthLabel(month);
+
         int colsNum =month+6;
 
         PdfPTable table = new PdfPTable(colsNum); // 设置表格是几列的
@@ -344,9 +348,16 @@ public class ReportController {
         String[] colNames =new  String[colsNum];
         colNames[0] = "Code";
 
-        for(int k=month-1,m=1;k>=0;k--,m++)
+
+
+//        for(int k=month-1,m=1;k>=0;k--,m++)
+//        {
+//            colNames[m] = SystemStatus.getCurrentMPrevious(k);
+//        }
+
+        for(int k =0;k<month;k++)
         {
-            colNames[m] = SystemStatus.getCurrentMPrevious(k);
+            colNames[k+1] = ls.get(k);
         }
 
         colNames[month+1]="stock";
@@ -380,13 +391,30 @@ public class ReportController {
 
                 total+=v;
             }
-            float av = total/(month);
+            int av = total/month;
 
-            writeCell(table,"nil");// stock
-            writeCell(table,"  "+av);// av
-            writeCell(table,"nil");//msoh
-            writeCell(table,"nil");//on order
-            writeCell(table,"nil");// inv value
+            List<Item> its = itemService.findByCode(en.getCode());
+            if(its.size()>0)
+            {
+                writeCell(table,""+its.get(0).getStock());// stock
+                writeCell(table,"  "+av);// av
+                if(its.get(0).getStock()<=0 || av == 0)
+                {
+                    writeCell(table,"0");//msoh
+                }else{
+                    writeCell(table,""+ its.get(0).getStock()/av);//msoh
+                }
+
+                writeCell(table,"nil");//on order
+                writeCell(table,""+its.get(0).getValue());// inv value
+            }else{
+                writeCell(table,"nil");// stock
+                writeCell(table,"  "+av);// av
+                writeCell(table,"nil");//msoh
+                writeCell(table,"nil");//on order
+                writeCell(table,"nil");// inv value
+            }
+
         }
 
         PdfPTableEvent event = new AlternatingBackground();
