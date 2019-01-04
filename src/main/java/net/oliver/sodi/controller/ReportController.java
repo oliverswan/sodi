@@ -11,6 +11,7 @@ import net.oliver.sodi.util.AlternatingBackground;
 import net.oliver.sodi.util.InvoiceGenerator;
 import net.oliver.sodi.util.MathUtil;
 import net.oliver.sodi.util.SystemStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,7 +156,13 @@ public class ReportController {
             {
                 Map.Entry<String,Integer> entry = (Map.Entry<String, Integer>) iter.next();
                 StringBuffer sb = new StringBuffer();
-                sb.append(entry.getKey()).append(" : ").append(entry.getValue());
+                List<Item> is = itemService.findByCode(entry.getKey());
+                sb.append(entry.getKey());
+                if(is.size()>0&&!StringUtils.isBlank(is.get(0).getLocation())&&!"0".equals(is.get(0).getLocation()))
+                {
+                    sb.append(" (").append(is.get(0).getLocation()).append(")");
+                }
+                sb.append(" : ").append(entry.getValue());
                 tL.add(sb.toString());
             }
         }
