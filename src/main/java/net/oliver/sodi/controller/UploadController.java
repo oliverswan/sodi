@@ -6,19 +6,31 @@ import net.oliver.sodi.dao.IInvoiceDao;
 import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.model.InvoiceItem;
 import net.oliver.sodi.service.IBackorderService;
+import net.oliver.sodi.util.MathUtil;
 import net.oliver.sodi.util.MongoAutoidUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row.MissingCellPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,7 +57,7 @@ public class UploadController {
     IBackorderService backorderService;
 
     //@Value("${prop.upload-folder}")
-    private String UPLOAD_FOLDER = "D:\\upload\\";
+//    private String UPLOAD_FOLDER = "D:\\upload\\";
 
     @PostMapping("/invoices")
     public Object singleFileUpload(MultipartFile file) {
@@ -133,6 +145,68 @@ public class UploadController {
         }
 
         return "success";
+
+    }
+
+
+    @PostMapping("/prices")
+    //ResponseEntity<byte[]>
+    public void generatePriceCsv(HttpServletRequest request, HttpServletResponse response,MultipartFile file) {
+//        if (Objects.isNull(file) || file.isEmpty()) {
+//            return "文件为空，请重新上传";
+//        }
+//        response.setContentType("application/x-download");
+
+        response.setHeader("content-Type", "octet/stream");// 告诉浏览器用什么软件可以打开此文件
+        response.setHeader("Content-Disposition", "attachment;filename=price.csv"); // 下载文件的默认名称
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", "pricelist");
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+        StringBuffer sb = new StringBuffer();
+
+            try {
+                PrintWriter pw = response.getWriter();
+                ByteArrayInputStream ins = new ByteArrayInputStream(file.getBytes());
+                HSSFWorkbook workbook = new HSSFWorkbook(ins);
+                HSSFSheet sheet = workbook.getSheetAt(0);
+                DataFormatter df = new DataFormatter();
+
+
+//			FileOutputStream os = new FileOutputStream(csv);
+
+//			writer.write("SKU,\"Product Name\",\"Price (Net)");
+
+                sb.append("\"SKU\",\"Product Name\",\"Price (Net)\"").append("\r\n");
+                pw.print(sb.toString());
+//			writer.write("\r\n");
+                for (int k = 2; k <sheet.getLastRowNum(); k++) {
+                    HSSFRow row = sheet.getRow(k);
+                    if(row == null)
+                        continue;
+                    // code
+                    sb = new StringBuffer();
+                    HSSFCell codeCell = row.getCell(0, MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    String codeV = codeCell.getStringCellValue();
+
+                    HSSFCell nameCell = row.getCell(2, MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    String name = nameCell.getStringCellValue();
+
+                    HSSFCell priceCell = row.getCell(11, MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    double price = priceCell.getNumericCellValue();
+                    sb.append("\"").append(codeV).append("\"").append(",\"").append(name).append("\"").append(",").append("\"").append(MathUtil.trimDouble(price)).append(" AUD\"").append("\r\n");
+                    pw.print(sb.toString());
+                }
+                pw.flush();
+                pw.close();
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+//        return new ResponseEntity<>(sb.toString().getBytes(), headers, HttpStatus.CREATED);
 
     }
 }

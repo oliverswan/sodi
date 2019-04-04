@@ -7,10 +7,7 @@ import net.oliver.sodi.service.IBackorderService;
 import net.oliver.sodi.service.IInvoiceService;
 import net.oliver.sodi.service.IItemService;
 import net.oliver.sodi.service.ISoldHistoryService;
-import net.oliver.sodi.util.AlternatingBackground;
-import net.oliver.sodi.util.InvoiceGenerator;
-import net.oliver.sodi.util.MathUtil;
-import net.oliver.sodi.util.SystemStatus;
+import net.oliver.sodi.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +53,7 @@ public class ReportController {
     private String[] columns = {"Seq", "Code","Stock","SPM","Reorder"};//,"Unit Cost","Margin"
     private String[] backOrdercolumns = {"Code", "Quantity","Distribute"};
     private String[] deliveryColumns = {"Name", "Items"};
+    private String[] deliveryColumns2 = {"Code", "Name", "Quantity", "Time", "Invoice","Value","Stock"};
     private void generatePDF(Document document,List<Item> items,int month) throws Exception {
             document.open();
             // seq,code,desc,stock,spm,reorder,cost,margin
@@ -136,79 +134,143 @@ public class ReportController {
     }
 
 
-    private Map<String,List<String>> getDelivery(){
+    private Map<String,List<String[]>> getDelivery(){
 
-        Map<String,List<String>> result = new HashMap<String,List<String>>();
+        Map<String,List<String[]>> result = new HashMap<String,List<String[]>>();
         List<Backorder> bos = backOrderService.findNotCompleted();
         for(Backorder bo : bos)
         {
-            List<String> tL;
+            List<String[]> tL;
 
             if(result.containsKey(bo.getCustomName()))
             {
                 tL = result.get(bo.getCustomName());
             }else{
-                tL = new ArrayList<String>();
+                tL = new ArrayList<String[]>();
                 result.put(bo.getCustomName(),tL);
             }
 
             for(Iterator iter = bo.getOrders().entrySet().iterator();iter.hasNext();)
             {
+                // code -> num
                 Map.Entry<String,Integer> entry = (Map.Entry<String, Integer>) iter.next();
                 StringBuffer sb = new StringBuffer();
                 List<Item> is = itemService.findByCode(entry.getKey());
                 sb.append(entry.getKey());
-                if(is.size()>0&&!StringUtils.isBlank(is.get(0).getLocation())&&!"0".equals(is.get(0).getLocation()))
+                String[] desp = new String[7];
+                desp[0]=entry.getKey();//code
+                desp[2]= String.valueOf(entry.getValue());//code
+                if(is.size()>0)
                 {
-                    sb.append(" (").append(is.get(0).getLocation()).append(")");
+                    desp[1] = is.get(0).getName();// 名称
+                    if(!StringUtils.isBlank(is.get(0).getLocation())&&!"0".equals(is.get(0).getLocation()))
+                        desp[0]= desp[0]+"("+is.get(0).getLocation()+")";
+                    if(bo.getCreatedTime()!=null)
+                    {
+                        Date created = bo.getCreatedTime();
+                        int n = DateUtil.calcDayOffset(new Date(),created);
+                        desp[3]= String.valueOf(n);// 创建多少天了
+                    }else{
+                        desp[3]= "N";// 创建多少天了
+                    }
+
+                    // 创建时间;
+                    desp[4]= bo.getInvoiceNumber();
+                    // 创建价值
+                    desp[5]= String.valueOf(MathUtil.trimDouble(entry.getValue()*is.get(0).getPrice()));
+                    // 当前库存
+                    desp[6] = String.valueOf(is.get(0).getStock());
+
                 }
-                sb.append(" : ").append(entry.getValue());
-                tL.add(sb.toString());
+                tL.add(desp);
             }
         }
         return result;
 
     }
 
+    private double createDeliveryTable(Document document,List<String[]> list)
+    {
+        double result = 0.0;
+        PdfPTable table = new PdfPTable(7); // 设置表格是几列的
+        float[] cls = {120,150,50,35,60,50,35};
+        try {
+            table.setTotalWidth(cls);//设置表格的各列宽度
+            table.setLockedWidth(true);
+            table.setSummary("This is summary");
+            table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER); // 水平对齐方式
+            table.getDefaultCell().setVerticalAlignment(Element.ALIGN_CENTER); // 垂直对齐方式
+            table.setSplitLate(false);
+
+            for(String c :  deliveryColumns2)
+            {
+                writeHeaderCell(table,c);
+            }
+
+//            Map<String,List<String[]>> dels = this.getDelivery();
+            StringBuffer sb = new StringBuffer();
+            for(String[] l : list)
+            {
+                for(String str : l)
+                    writeCell(table, str);
+                if(l[5]!=null)
+                result += Double.parseDouble(l[5]);
+            }
+
+            PdfPTableEvent event = new AlternatingBackground();
+            table.setTableEvent(event);
+
+            document.add(table);
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
     private void generateDeliveryPDF(Document document)  throws Exception{
 
         document.open();
-        // seq,code,desc,stock,spm,reorder,cost,margin
-        PdfPTable table = new PdfPTable(2); // 设置表格是几列的
-        float[] cls = {300,200};
-        table.setTotalWidth(cls);//设置表格的各列宽度
-        table.setLockedWidth(true);
-
-//        table.setWidth(80); // 宽度
-        table.setSummary("This is summary");
-        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER); // 水平对齐方式
-        table.getDefaultCell().setVerticalAlignment(Element.ALIGN_CENTER); // 垂直对齐方式
-        table.setSplitLate(false);
-
-        for(String c :  deliveryColumns)
-        {
-            writeHeaderCell(table,c);
-        }
-
-        Map<String,List<String>> dels = this.getDelivery();
+        double total = 0.0;
+        Map<String,List<String[]>> dels = this.getDelivery();
         StringBuffer sb = new StringBuffer();
         for(Iterator iter = dels.entrySet().iterator();iter.hasNext();)
         {
-            sb.delete(0, sb.length());
             Map.Entry entry = (Map.Entry) iter.next();
+//            Chunk chunk = new Chunk((String)entry.getKey());
+//            document.add(chunk);
 
-            writeCell(table, (String) entry.getKey());
-            for(String str : (List<String>)entry.getValue())
-            {
-                    sb.append(str).append("\r\n");
-            }
-            writeCell(table,sb.toString());
+            Paragraph paragraph3= new Paragraph();
+            paragraph3.add("           ");
+            paragraph3.setAlignment(Element.ALIGN_LEFT);
+            document.add(paragraph3);
+
+            Paragraph paragraph = new Paragraph();
+            paragraph.add((String)entry.getKey());
+            paragraph.setAlignment(Element.ALIGN_LEFT);
+            document.add(paragraph);
+
+            Paragraph paragraph2= new Paragraph();
+            paragraph2.add("           ");
+            paragraph2.setAlignment(Element.ALIGN_LEFT);
+            document.add(paragraph2);
+
+            double val = this.createDeliveryTable(document,(List<String[]>)entry.getValue());
+            total += val;
         }
 
-        PdfPTableEvent event = new AlternatingBackground();
-        table.setTableEvent(event);
+        Paragraph paragraph4= new Paragraph();
+        paragraph4.add("           ");
+        paragraph4.setAlignment(Element.ALIGN_LEFT);
+        document.add(paragraph4);
 
-        document.add(table);
+        Paragraph paragraph5 = new Paragraph();
+        paragraph5.add("Total value: "+ MathUtil.trimDouble(total));
+        paragraph5.setAlignment(Element.ALIGN_LEFT);
+        document.add(paragraph5);
+
+        Paragraph paragraph6= new Paragraph();
+        paragraph6.add("           ");
+        paragraph6.setAlignment(Element.ALIGN_LEFT);
+        document.add(paragraph6);
         document.close();
     }
 
@@ -237,7 +299,7 @@ public class ReportController {
         document.open();
         // seq,code,desc,stock,spm,reorder,cost,margin
         PdfPTable table = new PdfPTable(3); // 设置表格是几列的
-        float[] cls = {100,50,350};
+        float[] cls = {150,50,300};
         table.setTotalWidth(cls);//设置表格的各列宽度
         table.setLockedWidth(true);
 
@@ -254,16 +316,31 @@ public class ReportController {
 
         for(BackOrderReportEntry en : entries)
         {
-            writeCell(table,en.getItemCode());
+            String code = en.getItemCode();
+            StringBuffer sb = new StringBuffer();
+            sb.append(code);
+            List<Item> is = itemService.findByCode(code);
+            if(is.size()>0)
+            {
+                sb.append("\r\n").append(is.get(0).getName());
+
+                if(!StringUtils.isBlank(is.get(0).getLocation())&&!"0".equals(is.get(0).getLocation()))
+                {
+                    sb.append("\r\n (").append(is.get(0).getLocation()).append(")");
+                }
+            }
+
+
+            writeCell(table,sb.toString());
             writeCell(table,String.valueOf(en.getTotal()));
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb2 = new StringBuilder();
             for(Iterator iter = en.getDistribute().entrySet().iterator();iter.hasNext();)
             {
                 Map.Entry<String,Integer> cen = (Map.Entry<String, Integer>) iter.next();
-                sb.append(cen.getKey()+" : "+cen.getValue());
-                sb.append("\r\n");
+                sb2.append(cen.getKey()+" : "+cen.getValue());
+                sb2.append("\r\n");
             }
-            writeCell(table,sb.toString());
+            writeCell(table,sb2.toString());
         }
 
         PdfPTableEvent event = new AlternatingBackground();
@@ -318,6 +395,7 @@ public class ReportController {
 //            month =  SystemStatus.getCurrentM();
         // 0.根据参数
         List<SoldHistory> result = soldHistoryService.findAllForSalesHistory(month);
+        Collections.sort(result);
         Document document = new Document();
         PdfWriter.getInstance(document, response.getOutputStream());
         generateSalehistoryPDF(document,result,month);

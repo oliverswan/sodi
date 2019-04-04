@@ -3,6 +3,8 @@ package net.oliver.sodi.model;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +20,7 @@ public class Backorder {
     private String customName;
     private Map<String,Integer> orders = new HashMap<String,Integer>();
     private int status;/* 0 not complete 1 complete*/
+    private Date createdTime;
 
     public int getStatus() {
         return status;
@@ -37,6 +40,14 @@ public class Backorder {
 
     public Map<String, Integer> getOrders() {
         return orders;
+    }
+
+    public Date getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Date createdTime) {
+        this.createdTime = createdTime;
     }
 
     // 返回还没处理完的个数

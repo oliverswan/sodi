@@ -1,11 +1,11 @@
 package net.oliver.sodi.service.impl;
 
 import net.oliver.sodi.dao.IBackOrderDao;
-import net.oliver.sodi.model.BackOrderReportEntry;
-import net.oliver.sodi.model.Backorder;
-import net.oliver.sodi.model.Invoice;
-import net.oliver.sodi.model.InvoiceItem;
+import net.oliver.sodi.model.*;
 import net.oliver.sodi.service.IBackorderService;
+import net.oliver.sodi.service.IInvoiceService;
+import net.oliver.sodi.service.IItemService;
+import net.oliver.sodi.util.MongoAutoidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,15 @@ public class BackOrderServiceImpl implements IBackorderService {
     @Autowired
     IBackOrderDao dao;
 
+    @Autowired
+    IItemService itemService;
+
+    @Autowired
+    MongoAutoidUtil sequence;
+
+    @Autowired
+    IInvoiceService invoiceService;
+
     @Override
     public void saveBackOrders(List<Backorder> list) {
         dao.save(list);
@@ -23,6 +32,7 @@ public class BackOrderServiceImpl implements IBackorderService {
 
     @Override
     public void save(Backorder bo) {
+        bo.setCreatedTime(new Date());
         dao.save(bo);
     }
 
@@ -103,6 +113,43 @@ public class BackOrderServiceImpl implements IBackorderService {
         }
         if(backorders.size()>0)
             dao.save(backorders);
+    }
+
+    @Override
+    public void stockBackorders(Invoice invoice) {
+
+
+        Backorder bo = new Backorder();
+        bo.setId(sequence.getNextSequence("backorder"));
+        bo.setInvoiceNumber(invoice.getInvoiceNumber());
+        bo.setCustomName(invoice.getContactName());
+        Map<String,Integer> orders = new HashMap<>();
+        bo.setOrders(orders);
+        for(InvoiceItem invoiceItem : invoice.getItems())
+        {
+            String code = invoiceItem.getInventoryItemCode();
+            int quantity = invoiceItem.getQuantity();
+
+            List<Item> is = itemService.findByCode(code);
+
+            if(is.size()>0)
+            {
+                Item item = is.get(0);
+                int stock = item.getStock();
+
+                if(stock < quantity)
+                {
+                    // 修改订单
+                    invoiceItem.setQuantity(stock);
+                    // 修改backorder
+                    int owed = quantity - stock;
+                    orders.put(code,owed);
+                    // 确保处理后没有BO
+                }
+            }
+        }
+        invoiceService.save(invoice);
+        dao.save(bo);
     }
 
     @Override

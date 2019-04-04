@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Document
-public class SoldHistory {
+public class SoldHistory implements Comparable<SoldHistory> {
 
     @Indexed
     private int id;  //自定义id
@@ -69,5 +69,10 @@ public class SoldHistory {
 
     public void setHis(Map<Integer, Integer> his) {
         this.his = his;
+    }
+
+    @Override
+    public int compareTo(SoldHistory o) {
+        return this.getCode().compareTo(o.getCode());
     }
 }

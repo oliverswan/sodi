@@ -409,6 +409,21 @@ public class InvoiceController {
 //        String x = this.approveInvoice(invoice);
         return  "{'status':'ok'}";
     }
+
+    @RequestMapping(value = { "/stockBackorder" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @ResponseBody
+    public String stockBackorder(@RequestBody Invoice invoice)  {
+
+        try {
+            backorderService.stockBackorders(invoice);
+        }catch (Exception e)
+        {
+            return "{'status':'fail'}";
+        }
+//        String x = this.approveInvoice(invoice);
+        return  "{'status':'ok'}";
+    }
+
     @RequestMapping(value = { "/approveMulti" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
     @ResponseBody
     public String approviceS(@RequestBody List<Invoice> invoices)  {
@@ -467,6 +482,8 @@ public class InvoiceController {
                     int delta = quantity - stock;
                     sb.append(delta +" X "+ code).append("<br/>");
                 }
+            }else{
+                sb.append(quantity +" X "+ code).append("<br/>");
             }
         }
         if(sb.toString().length()<=1)
@@ -474,6 +491,7 @@ public class InvoiceController {
             return "We have all of them!";
         }else
         {
+            sb.append("On back order.");
             return sb.toString();
         }
     }

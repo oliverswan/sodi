@@ -104,7 +104,7 @@ public class JsoupUtil {
             {
                 gst =0;
             }
-            if(contact.getContactName().equals("The Kart Centre")||contact.getContactName().equals("Ultimate Karting Sydney"))
+            if(contact.getContactName().equals("The Kart Center") || contact.getContactName().equals("The Kart Centre")||contact.getContactName().equals("Ultimate Karting Sydney"))
             {
                 discount = MathUtil.trimDouble(0.80);
             }
