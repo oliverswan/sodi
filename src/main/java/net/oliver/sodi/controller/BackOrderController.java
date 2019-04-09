@@ -44,11 +44,12 @@ public class BackOrderController {
     public String getItem(@PathVariable int id )  {
 
         Backorder result = service.findById(id);
-        if(result!=null)
-        {
-            result.setStatus(1);
-            service.save(result);
-        }
+        service.delete(result);
+//        if(result!=null)
+//        {
+//            result.setStatus(1);
+//            service.save(result);
+//        }
         return "ok";
     }
 

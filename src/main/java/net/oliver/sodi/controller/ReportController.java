@@ -53,7 +53,7 @@ public class ReportController {
     private String[] columns = {"Seq", "Code","Stock","SPM","Reorder"};//,"Unit Cost","Margin"
     private String[] backOrdercolumns = {"Code", "Quantity","Distribute"};
     private String[] deliveryColumns = {"Name", "Items"};
-    private String[] deliveryColumns2 = {"Code", "Name", "Quantity", "Time", "Invoice","Value","Stock"};
+    private String[] deliveryColumns2 = {"Code", "Name", "Quantity", "Days", "Invoice","Value","Stock"};
     private void generatePDF(Document document,List<Item> items,int month) throws Exception {
             document.open();
             // seq,code,desc,stock,spm,reorder,cost,margin
@@ -168,7 +168,7 @@ public class ReportController {
                     if(bo.getCreatedTime()!=null)
                     {
                         Date created = bo.getCreatedTime();
-                        int n = DateUtil.calcDayOffset(new Date(),created);
+                        int n = DateUtil.calcDayOffset(created,new Date());
                         desp[3]= String.valueOf(n);// 创建多少天了
                     }else{
                         desp[3]= "N";// 创建多少天了

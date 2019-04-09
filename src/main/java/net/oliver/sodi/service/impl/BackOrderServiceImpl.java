@@ -32,7 +32,8 @@ public class BackOrderServiceImpl implements IBackorderService {
 
     @Override
     public void save(Backorder bo) {
-        bo.setCreatedTime(new Date());
+        if(bo.getCreatedTime() == null)
+            bo.setCreatedTime(new Date());
         dao.save(bo);
     }
 
