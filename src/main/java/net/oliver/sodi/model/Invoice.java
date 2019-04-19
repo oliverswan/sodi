@@ -41,6 +41,15 @@ public class Invoice {
     private String subtotals;
     private String gsts;
     private String totalamounts;
+    private BigDecimal gstRatio = new BigDecimal("0.1");
+
+    public BigDecimal getGstRatio() {
+        return gstRatio;
+    }
+
+    public void setGstRatio(BigDecimal gstRatio) {
+        this.gstRatio = gstRatio;
+    }
 
     public void reCalculate(){
         this.totalamount = new BigDecimal("0.00");
@@ -51,7 +60,7 @@ public class Invoice {
         this.totalamount =  this.totalamount.setScale(2,   BigDecimal.ROUND_HALF_UP);
         this.totalamounts = MathUtil.df.format(this.totalamount);
 
-        this.gst = this.totalamount.multiply(new BigDecimal("0.1"));
+        this.gst = this.totalamount.multiply(this.gstRatio);
         this.gsts =  MathUtil.df.format(this.gst);
 
         this.subtotal = this.totalamount.add(this.gst);

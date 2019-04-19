@@ -23,6 +23,24 @@ public class Contact {
     private String poCountry;
     private String mobile;
     private String phone;
+    private Float discount;
+    private Float gst;
+
+    public Float getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Float discount) {
+        this.discount = discount;
+    }
+
+    public Float getGst() {
+        return gst;
+    }
+
+    public void setGst(Float gst) {
+        this.gst = gst;
+    }
 
     public String getPhone() {
         return phone;

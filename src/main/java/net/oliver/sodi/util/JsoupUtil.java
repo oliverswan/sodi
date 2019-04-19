@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -99,26 +100,33 @@ public class JsoupUtil {
             double discount = 1;
             double gst = 1;
 //            if(this.contactName === "Baykarts limited"||this.contactName === "Formula Challenge Limited"||this.contactName === "Pro Karts"||this.contactName === "Daytona Raceway")
-            if(contact.getContactName().equals("Baykarts limited")||contact.getContactName().equals("Formula Challenge Limited")
-                    ||contact.getContactName().equals("Pro Karts")||contact.getContactName().equals("Daytona Raceway"))
+
+//            if(contact.getContactName().equals("Baykarts limited")||contact.getContactName().equals("Formula Challenge Limited")
+//                    ||contact.getContactName().equals("Pro Karts")||contact.getContactName().equals("Daytona Raceway")||contact.getContactName().equals("El Rancho Waikanae"))
+//            {
+//                gst =0;
+//            }
+            if(contact.getGst()!=null)
             {
-                gst =0;
+                gst = contact.getGst();
+                invoice.setGstRatio(new BigDecimal(gst));
             }
-            if(contact.getContactName().equals("The Kart Center") || contact.getContactName().equals("The Kart Centre")||contact.getContactName().equals("Ultimate Karting Sydney"))
+//            if(contact.getContactName().equals("The Kart Center") || contact.getContactName().equals("The Kart Centre"))
+            if(contact.getDiscount()!=null)
             {
-                discount = MathUtil.trimDouble(0.80);
+                discount = MathUtil.trimDouble(contact.getDiscount());
             }
             Elements itemTrs =itemTr.get(2).siblingElements();
             for (int i = 0; i < itemTrs.size() - 2; i++) {
                 Elements tds = itemTrs.get(i).select("td");
                 InvoiceItem iItem = new InvoiceItem();
                 // TKC 轮胎不打折
-                if(contact.getContactName().equals("The Kart Centre")&&tds.get(0).text().trim().startsWith("TY"))
-                {
-                    itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,1,gst);
-                }else{
+//                if(contact.getContactName().equals("The Kart Centre")&&tds.get(0).text().trim().startsWith("TY"))
+//                {
+//                    itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,1,gst);
+//                }else{
                     itemUtil.fillInvoiceItem(tds.get(0).text().trim(), Integer.parseInt(tds.get(1).text().trim()), iItem,discount,gst);
-                }
+//                }
                 invoice.addItem(iItem);
             }
             // 自动添加shiping fee
