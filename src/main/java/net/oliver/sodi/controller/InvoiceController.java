@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping(value = "/api/invoices")
@@ -488,12 +486,39 @@ public class InvoiceController {
         }
         if(sb.toString().length()<=1)
         {
-            return "We have all of them!";
+            sb.append("We have all of them!");
         }else
         {
             sb.append("On back order.");
-            return sb.toString();
         }
+        sb.append("<br/>");
+        // Check back order
+        List<Backorder> backorders = backorderService.findByCustomName(invoice.getContactName());
+        boolean added = false;
+        if(backorders.size()>0)
+        {
+            for(Backorder b : backorders)
+            {
+                if(b.getStatus() == 1)
+                    continue;
+
+
+                for (Map.Entry entry : b.getOrders().entrySet()) {
+                    List<Item> products = itemService.findByCode((String) entry.getKey());
+                    if(products.size()>0)
+                        if(products.get(0).getStock()>0)
+                        {
+                            if(!added)
+                            {
+                                sb.append("This Customer has back order in stock: ").append("<br/>");
+                                added = true;
+                            }
+                            sb.append((String) entry.getKey()).append(" : ").append(products.get(0).getStock()).append("<br/>");
+                        }
+                }
+            }
+        }
+        return sb.toString();
     }
 
     @GetMapping("/gobo/{id}")

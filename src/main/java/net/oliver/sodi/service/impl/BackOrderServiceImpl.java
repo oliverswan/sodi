@@ -77,6 +77,11 @@ public class BackOrderServiceImpl implements IBackorderService {
     }
 
     @Override
+    public List<Backorder> findByCustomName(String customerName) {
+        return dao.findByCustomName(customerName);
+    }
+
+    @Override
     public Backorder findById(int id) {
         return dao.findOne(id);
     }

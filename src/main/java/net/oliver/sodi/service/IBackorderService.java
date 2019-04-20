@@ -14,6 +14,7 @@ public interface IBackorderService {
     public List<Backorder> findNotCompleted();
     public List<BackOrderReportEntry> report();
     public List<Backorder> findByInvoiceNumber(String invoice_number);
+    public List<Backorder> findByCustomName(String customerName);
     public Backorder findById(int id);
 
     public void processInvoice(Invoice invoice);
