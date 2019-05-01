@@ -53,7 +53,7 @@ public class ReportController {
     private String[] columns = {"Seq", "Code","Stock","SPM","Reorder"};//,"Unit Cost","Margin"
     private String[] backOrdercolumns = {"Code", "Quantity","Distribute"};
     private String[] deliveryColumns = {"Name", "Items"};
-    private String[] deliveryColumns2 = {"Code", "Name", "Quantity", "Days", "Invoice","Value","Stock"};
+    private String[] deliveryColumns2 = {"Code", "Name", "Quantity", "Days", "Invoice","Stock","Coming"};
     private void generatePDF(Document document,List<Item> items,int month) throws Exception {
             document.open();
             // seq,code,desc,stock,spm,reorder,cost,margin
@@ -176,10 +176,11 @@ public class ReportController {
 
                     // 创建时间;
                     desp[4]= bo.getInvoiceNumber();
-                    // 创建价值
-                    desp[5]= String.valueOf(MathUtil.trimDouble(entry.getValue()*is.get(0).getPrice()));
                     // 当前库存
-                    desp[6] = String.valueOf(is.get(0).getStock());
+                    desp[5]= String.valueOf(is.get(0).getStock());
+//                            String.valueOf(MathUtil.trimDouble(entry.getValue()*is.get(0).getPrice()));
+                    // 正在路上
+                    desp[6] = String.valueOf(is.get(0).getComing());
 
                 }
                 tL.add(desp);
@@ -332,7 +333,7 @@ public class ReportController {
 
 
             writeCell(table,sb.toString());
-            writeCell(table,String.valueOf(en.getTotal()));
+            writeCell(table,String.valueOf(en.getTotal())+"/"+en.getComing());
             StringBuilder sb2 = new StringBuilder();
             for(Iterator iter = en.getDistribute().entrySet().iterator();iter.hasNext();)
             {

@@ -28,10 +28,10 @@ public class BackOrderController {
 
     @GetMapping("")
     @ResponseBody
-    public BackOrderResult findNotCompleted(@RequestParam int echo)  {
+    public BackOrderResult findAll(@RequestParam int echo)  {
 
         BackOrderResult r = new BackOrderResult();
-        List<Backorder> l = service.findNotCompleted();
+        List<Backorder> l = service.findAll();
         r.setEcho(echo);
         r.setFiltered(l.size());
         r.setData(l);
@@ -100,5 +100,32 @@ public class BackOrderController {
             service.save(exitBo);
         }
         return "{'status':'ok'}";
+    }
+
+    @GetMapping("/markOrdered")
+    @ResponseBody
+    public String markOrdered()  {
+//        bo.setId(sequence.getNextSequence("backorder"));
+//        service.save(bo);
+        try
+        {
+            List<Backorder> list = service.findNotCompleted();
+            if(list.size()>0)
+            {
+                for(Backorder bo : list)
+                {
+                    bo.setStatus(1);
+                }
+
+                service.saveBackOrders(list);
+            }
+            return "{'status':'ok'}";
+        }catch (Exception x)
+        {
+
+            return "{'status':'"+x.getClass().getCanonicalName()+"'}";
+        }
+
+
     }
 }

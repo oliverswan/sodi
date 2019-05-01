@@ -365,13 +365,16 @@ public class InvoiceController {
         return x;
     }
 
-    @RequestMapping(value = { "/email" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
+    @RequestMapping(value = { "/delete" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")
     @ResponseBody
-    public String email(@RequestBody Invoice invoice)  {
-        Backorder bo = new Backorder();
-        bo.addItem("PC0999.999",5);
-        sendMail.doSendBackOrderRemindEmail(invoice,bo,"oliver_reg@126.com");
-        return "{'status':'ok'}";
+    public String delete(@RequestBody Invoice invoice)  {
+        try{
+            invoiceService.delete(invoice);
+            return "{'status':'ok'}";
+        }catch (Exception e)
+        {
+            return "{'status':'error'}";
+        }
     }
 
     @RequestMapping(value = { "/undo" }, method = { RequestMethod.POST }, produces="application/json;charset=UTF-8")

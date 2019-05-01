@@ -47,6 +47,11 @@ public class InvoiceServiceImpl implements IInvoiceService {
     }
 
     @Override
+    public void delete(Invoice invoice) {
+        dao.delete(invoice);
+    }
+
+    @Override
     public void saveInvoices(List<Invoice> list) {
         dao.save(list);
     }

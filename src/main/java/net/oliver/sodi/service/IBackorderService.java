@@ -12,6 +12,7 @@ public interface IBackorderService {
     public void save(Backorder bo);
 //    public void update(Backorder bo);
     public List<Backorder> findNotCompleted();
+    public List<Backorder> findAll();
     public List<BackOrderReportEntry> report();
     public List<Backorder> findByInvoiceNumber(String invoice_number);
     public List<Backorder> findByCustomName(String customerName);

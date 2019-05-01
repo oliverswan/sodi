@@ -6,6 +6,16 @@ import java.util.Map;
 public class BackOrderReportEntry  implements Comparable<BackOrderReportEntry> {
     private String itemCode;
     private int total;
+
+    public int getComing() {
+        return coming;
+    }
+
+    public void setComing(int coming) {
+        this.coming = coming;
+    }
+
+    private int coming;
     private Map<String,Integer> distribute = new HashMap<String,Integer>();
 
     public void addDistributeForCustomer(String customName,Integer value)

@@ -10,6 +10,7 @@ public interface IInvoiceService {
 
     void save(Invoice invoice);
     void update(Invoice invoice);
+    void delete(Invoice invoice);
     void saveInvoices(List<Invoice> list);
 
     Iterable<Invoice> findAll();

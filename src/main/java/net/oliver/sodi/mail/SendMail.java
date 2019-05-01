@@ -103,7 +103,7 @@ public class SendMail {
             for(Iterator<Map.Entry<String,Integer>> iter = bo.getOrders().entrySet().iterator();iter.hasNext();)
             {
                 Map.Entry<String,Integer> entry = iter.next();
-                sb.append(entry.getKey()+" X "+entry.getValue()).append("<br>");
+                sb.append(entry.getValue()+" X "+ entry.getKey()).append("<br>");
             }
             sb.append("<br>");
             sb.append("These items are on order with Sodi and we'll ship them  as soon as possible.");

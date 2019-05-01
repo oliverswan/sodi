@@ -44,9 +44,14 @@ public class BackOrderServiceImpl implements IBackorderService {
     }
 
     @Override
+    public List<Backorder> findAll() {
+        return dao.findAll();
+    }
+
+    @Override
     public List<BackOrderReportEntry> report() {
         Map<String,BackOrderReportEntry> temp = new HashMap<String,BackOrderReportEntry>();
-        List<Backorder> orders = dao.findAll();
+        List<Backorder> orders = this.findNotCompleted();
         for(Backorder order : orders)
         {
             for(Iterator iter = order.getOrders().entrySet().iterator();iter.hasNext();)
@@ -59,9 +64,15 @@ public class BackOrderServiceImpl implements IBackorderService {
                 {
                      t = temp.get(itemCode);
                 }else{
-                     t = new BackOrderReportEntry();
+                    t = new BackOrderReportEntry();
                     t.setItemCode(itemCode);
                     temp.put(itemCode,t);
+                }
+//                t.setComing(entry);
+                List<Item> list = itemService.findByCode(itemCode);
+                if(list.size()>0)
+                {
+                    t.setComing(list.get(0).getComing());
                 }
                 t.addToTal(entry.getValue());
                 t.addDistributeForCustomer(order.getCustomName(),entry.getValue());
