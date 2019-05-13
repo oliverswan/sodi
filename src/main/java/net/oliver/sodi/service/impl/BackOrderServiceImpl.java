@@ -37,6 +37,11 @@ public class BackOrderServiceImpl implements IBackorderService {
         dao.save(bo);
     }
 
+    @Override
+    public List<Backorder> findCompleted() {
+        return dao.findByStatusGreaterThan(0);
+    }
+
 
     @Override
     public List<Backorder> findNotCompleted() {
@@ -49,9 +54,10 @@ public class BackOrderServiceImpl implements IBackorderService {
     }
 
     @Override
-    public List<BackOrderReportEntry> report() {
+    public List<BackOrderReportEntry> report(int status) {
         Map<String,BackOrderReportEntry> temp = new HashMap<String,BackOrderReportEntry>();
-        List<Backorder> orders = this.findNotCompleted();
+        List<Backorder> orders = this.findByStatus(status);
+
         for(Backorder order : orders)
         {
             for(Iterator iter = order.getOrders().entrySet().iterator();iter.hasNext();)
@@ -90,6 +96,11 @@ public class BackOrderServiceImpl implements IBackorderService {
     @Override
     public List<Backorder> findByCustomName(String customerName) {
         return dao.findByCustomName(customerName);
+    }
+
+    @Override
+    public List<Backorder> findByStatus(int status) {
+        return dao.findByStatus(status);
     }
 
     @Override

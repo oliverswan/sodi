@@ -121,11 +121,11 @@ public class ReportController {
         generatePDF(document,result,month);
     }
 
-    @RequestMapping(value = "/backorder",method = RequestMethod.GET)
-    public void  backorder(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    @RequestMapping(value = "/backorder/{status}",method = RequestMethod.GET)
+    public void  backorder(HttpServletRequest request, HttpServletResponse response, @PathVariable int status) throws Exception {
         response.setHeader("content-Type", "application/pdf");// 告诉浏览器用什么软件可以打开此文件
         response.setHeader("Content-Disposition", "inline;filename=backorder.pdf"); // 下载文件的默认名称
-        List<BackOrderReportEntry> entries = backOrderService.report();
+        List<BackOrderReportEntry> entries = backOrderService.report(status);
         Collections.sort(entries);
         Document document = new Document();
         PdfWriter.getInstance(document, response.getOutputStream());
@@ -134,10 +134,10 @@ public class ReportController {
     }
 
 
-    private Map<String,List<String[]>> getDelivery(){
+    private Map<String,List<String[]>> getDelivery(int status){
 
         Map<String,List<String[]>> result = new HashMap<String,List<String[]>>();
-        List<Backorder> bos = backOrderService.findNotCompleted();
+        List<Backorder> bos = backOrderService.findByStatus(status);
         for(Backorder bo : bos)
         {
             List<String[]> tL;
@@ -227,11 +227,11 @@ public class ReportController {
         }
         return result;
     }
-    private void generateDeliveryPDF(Document document)  throws Exception{
+    private void generateDeliveryPDF(Document document,int status)  throws Exception{
 
         document.open();
         double total = 0.0;
-        Map<String,List<String[]>> dels = this.getDelivery();
+        Map<String,List<String[]>> dels = this.getDelivery(status);
         StringBuffer sb = new StringBuffer();
         for(Iterator iter = dels.entrySet().iterator();iter.hasNext();)
         {
@@ -276,13 +276,11 @@ public class ReportController {
     }
 
 
-    @RequestMapping(value = "/backorderDelivery",method = RequestMethod.GET)
-    public void  backorderDelivery(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    @RequestMapping(value = "/backorderDelivery/{status}",method = RequestMethod.GET)
+    public void  backorderDelivery(HttpServletRequest request, HttpServletResponse response, @PathVariable int status/*@RequestParam int num*/) throws Exception {
         response.setHeader("content-Type", "application/pdf");// 告诉浏览器用什么软件可以打开此文件
         response.setHeader("Content-Disposition", "inline;filename=delivery.pdf"); // 下载文件的默认名称
-
-
-        List<BackOrderReportEntry> entries = backOrderService.report();
+//        List<BackOrderReportEntry> entries = backOrderService.report(status);
 //        Collections.sort(entries, new Comparator<BackOrderReportEntry>() {
 //            @Override
 //            public int compare(BackOrderReportEntry o1, BackOrderReportEntry o2) {
@@ -291,7 +289,7 @@ public class ReportController {
 //        });
         Document document = new Document();
         PdfWriter.getInstance(document, response.getOutputStream());
-        generateDeliveryPDF(document);
+        generateDeliveryPDF(document,status);
         response.flushBuffer();
     }
 
