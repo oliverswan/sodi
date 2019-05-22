@@ -21,6 +21,11 @@ public class PoTrackingServiceImpl implements IPoTrackingService {
 
     @Override
     public List<PoTracking> findById(int id) {
-        return null;
+        return dao.findById(id);
+    }
+
+    @Override
+    public void save(PoTracking po) {
+        dao.save(po);
     }
 }

@@ -3,6 +3,7 @@ package net.oliver.sodi.model;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -15,18 +16,18 @@ public class PoTracking {
     private String partsType;
     private String date;
     private String freightType;
-    private List<String> proFormaFileUrls;
+    private List<String> proFormaFileUrls= new ArrayList<>();
     private String proFormaNumber;
     private int proformaInXero;//0,1
     private int depositPaymentStatus;//0,1
-    private List<String> depositPaymentUrls;
+    private List<String> depositPaymentUrls = new ArrayList<>();
     private String productionDate;
     private int sodiInvoiceInXero;//0,1
     private int proformaCancelled;//0,1
     private int balancePaymentStatus;//0,1
-    private List<String> balancePaymentUrls;
+    private List<String> balancePaymentUrls= new ArrayList<>();
     private String dispatchDate;
-    private List<String> shippingPreAlertUrls;
+    private List<String> shippingPreAlertUrls= new ArrayList<>();
     private String deliveryDate;
 
 
