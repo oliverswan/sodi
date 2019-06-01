@@ -3,6 +3,7 @@ package net.oliver.sodi.mail;
 import net.oliver.sodi.controller.InvoiceController;
 import net.oliver.sodi.model.Backorder;
 import net.oliver.sodi.model.Invoice;
+import net.oliver.sodi.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -79,6 +81,62 @@ public class SendMail {
         message = new MimeMessage(session);
     }
 
+    public void doSendBoListEmail(String email, List<String[]> lists)
+    {
+        try {
+            // 发件人
+            InternetAddress from = new InternetAddress(sender_username);
+            message.setFrom(from);
+            // 收件人
+            InternetAddress to = new InternetAddress(email);
+            message.setRecipient(Message.RecipientType.TO, to);
+            // 邮件主题
+            message.setSubject("Weekly back order report ["+DateUtil.getCurrentDate()+"]");
+
+            // 向multipart对象中添加邮件的各个部分内容，包括文本内容和附件
+            Multipart multipart = new MimeMultipart();
+
+            // 添加邮件正文
+            BodyPart contentPart = new MimeBodyPart();
+
+            StringBuffer sb = new StringBuffer();
+            sb.append("Dear Customer,").append("<br><br>").append("Please notice that you have following back orders with us,<br><br>");
+//            for(Iterator<Map.Entry<String,Integer>> iter = bo.getOrders().entrySet().iterator();iter.hasNext();)
+//            {
+//                Map.Entry<String,Integer> entry = iter.next();
+//                sb.append(entry.getValue()+" X "+ entry.getKey()).append("<br>");
+//            }
+            for(String[] content : lists)
+            {
+                sb.append(content[2]).append(" X ").append(content[0]).append(" ").append(content[1]).append("<br>");
+            }
+            sb.append("<br>");
+            sb.append("These items are on order with Sodi and we'll ship them  as soon as possible.");
+            sb.append("If you have any questions, please contact us.<br>");
+            sb.append("We appreciate your business and we apologize for any inconvenience this delay causes you.<br><br>");
+            sb.append("Kind regards<br>");
+            sb.append("Sodi Karts Australasia");
+
+            // =============================================================
+            contentPart.setContent(sb.toString(), "text/html;charset=UTF-8");
+            multipart.addBodyPart(contentPart);
+            message.setContent(multipart);
+
+            Transport.send(message);
+            logger.info("Successfully send backorder Email to: "+email);
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }finally {
+            if (transport != null) {
+                try {
+                    transport.close();
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
     public void doSendBackOrderRemindEmail(Invoice invoice, Backorder bo, String receiveUser) {
         try {
             // 发件人

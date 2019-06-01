@@ -2,11 +2,9 @@ package net.oliver.sodi.controller;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
+import net.oliver.sodi.mail.SendMail;
 import net.oliver.sodi.model.*;
-import net.oliver.sodi.service.IBackorderService;
-import net.oliver.sodi.service.IInvoiceService;
-import net.oliver.sodi.service.IItemService;
-import net.oliver.sodi.service.ISoldHistoryService;
+import net.oliver.sodi.service.*;
 import net.oliver.sodi.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,7 +40,15 @@ public class ReportController {
     ISoldHistoryService soldHistoryService;
 
     @Autowired
+    IContactService contactService;
+
+    @Autowired
     InvoiceGenerator invo;
+
+    @Autowired
+    SendMail sendMail;
+
+    static Map<String,String> customerEmails = new HashMap<String,String>();
 
     private Font getPdfChineseFont() throws Exception {
         BaseFont bfChinese = BaseFont.createFont("STSongStd-Light", "UniGB-UCS2-H", BaseFont.NOT_EMBEDDED);
@@ -158,7 +164,7 @@ public class ReportController {
                 List<Item> is = itemService.findByCode(entry.getKey());
                 sb.append(entry.getKey());
                 String[] desp = new String[7];
-                desp[0]=entry.getKey();//code
+                desp[0]=entry.getKey();// 0 code
                 desp[2]= String.valueOf(entry.getValue());//code
                 if(is.size()>0)
                 {
@@ -238,7 +244,7 @@ public class ReportController {
             Map.Entry entry = (Map.Entry) iter.next();
 //            Chunk chunk = new Chunk((String)entry.getKey());
 //            document.add(chunk);
-
+            // 画单独的标题
             Paragraph paragraph3= new Paragraph();
             paragraph3.add("           ");
             paragraph3.setAlignment(Element.ALIGN_LEFT);
@@ -254,6 +260,7 @@ public class ReportController {
             paragraph2.setAlignment(Element.ALIGN_LEFT);
             document.add(paragraph2);
 
+            // 真正地为单个客户创建表格
             double val = this.createDeliveryTable(document,(List<String[]>)entry.getValue());
             total += val;
         }
@@ -275,6 +282,50 @@ public class ReportController {
         document.close();
     }
 
+
+    @RequestMapping(value = "/sendlist",method = RequestMethod.GET)
+    public String  sendlist(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        // 查找所有的
+        Map<String,List<String[]>> dels = this.getDelivery(0);
+        // 遍历并发邮件
+        StringBuffer sb = new StringBuffer();
+        for(Iterator iter = dels.entrySet().iterator();iter.hasNext();)
+        {
+            Map.Entry entry = (Map.Entry) iter.next();
+//            Chunk chunk = new Chunk((String)entry.getKey());
+//            document.add(chunk);
+
+            // 客户名称
+
+            String customername = (String) entry.getKey();
+
+            // 获取客户Email
+            String email = customerEmails.get(customername);
+            if(email == null)
+            {
+                //
+                List<Contact> contacts = contactService.findByContactName(customername);
+                if(contacts.size()>0)
+                {
+                    email = contacts.get(0).getEmailAddress();
+                    if(email == null)
+                        email = "fail";
+                    customerEmails.put(customername,email);
+                }
+            }
+
+            if(email!=null&&!email.equals("fail"))
+            {
+                // 发送邮件
+                //临时
+//                email ="oliver_daily@126.com";
+                sendMail.doSendBoListEmail(email, (List<String[]>) entry.getValue());
+            }
+        }
+
+        return "Finish!";
+    }
 
     @RequestMapping(value = "/backorderDelivery/{status}",method = RequestMethod.GET)
     public void  backorderDelivery(HttpServletRequest request, HttpServletResponse response, @PathVariable int status/*@RequestParam int num*/) throws Exception {

@@ -15,6 +15,12 @@ public class DateUtil {
 	private static String[] smonths = {"01","03","05","07","08","10","12"};
 	private static String[] dmonths = {"02","04","06","09","11"};
 
+	public static String getCurrentDate(){
+		Date now=new Date();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+		return dateFormat.format(now);
+	}
+
 	public static int calcDayOffset(Date date1, Date date2) {
 		Calendar cal1 = Calendar.getInstance();
 		cal1.setTime(date1);
