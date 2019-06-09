@@ -20,6 +20,7 @@ public class Item implements Comparable<Item> {
     private int soldThisYear;// sold
     private int stock;// 当前存货
     private List<Integer> soldHistory;
+    private String itakaId = "";
 
     public double getCpriceAu() {
         return cpriceAu;
@@ -259,9 +260,16 @@ public class Item implements Comparable<Item> {
         this.code = code;
     }
 
-
     @Override
     public int compareTo(Item o) {
         return this.code.compareTo(o.getCode());
+    }
+
+    public String getItakaId() {
+        return itakaId;
+    }
+
+    public void setItakaId(String itakaId) {
+        this.itakaId = itakaId;
     }
 }

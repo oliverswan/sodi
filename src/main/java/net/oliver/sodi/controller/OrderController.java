@@ -1,6 +1,7 @@
 package net.oliver.sodi.controller;
 
 
+import net.oliver.sodi.http.ItakaShop;
 import net.oliver.sodi.model.InvoicesResult;
 import net.oliver.sodi.model.Item;
 import net.oliver.sodi.model.Order;
@@ -8,6 +9,8 @@ import net.oliver.sodi.model.OrderResult;
 import net.oliver.sodi.service.IItemService;
 import net.oliver.sodi.service.IOrderService;
 import net.oliver.sodi.util.MongoAutoidUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,7 +19,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 @RequestMapping(value = "/api/orders")
@@ -30,6 +36,11 @@ public class OrderController {
 
     @Autowired
     MongoAutoidUtil sequence;
+
+
+    static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+    private  static ConcurrentHashMap<String,String> codeToId = new ConcurrentHashMap<String,String>();
 
     private PageRequest buildPageRequest(int pageNumber, int pageSize, String sortType) {
         Sort sort =  new Sort(Sort.Direction.ASC, "_id");;
@@ -68,5 +79,46 @@ public class OrderController {
         }
         service.save(order);
         return "ok";
+    }
+
+    @GetMapping("/addcart")
+    @ResponseBody
+//    url = url + "pageNum=" + this.pageNum + '&pageSize=' + this.pageSize
+    public String addcart(int id)  {
+        // 0.首先找到order
+        Order order = service.findById(id);
+        if(order != null)
+        {
+
+
+            // 1.遍历所有item 添加到order
+            for(Iterator iter = order.getItems().entrySet().iterator();iter.hasNext(); )
+            {
+                Map.Entry entry = (Map.Entry) iter.next();
+
+                // 2.准备id
+                String itakaId = codeToId.get(entry.getKey());
+                if(itakaId == null)
+                {
+                    List<Item> list = itemService.findByCode((String) entry.getKey());
+                    if(list.size()>0)
+                    {
+                        if(list.get(0).getItakaId() == null)
+                        {
+                            logger.info("Cant add "+list.get(0).getCode()+" to itaka ship, reason : no product id found.");
+                            continue;
+                        }
+                        itakaId = list.get(0).getItakaId();
+                        codeToId.putIfAbsent(list.get(0).getCode(),itakaId);
+                    }else{
+                        logger.info("Cant add "+list.get(0).getCode()+" to itaka ship, reason : cant find such item code.");
+                        continue;
+                    }
+                }
+                ItakaShop.addCart(itakaId,String.valueOf(entry.getValue()));
+            }
+            return "ok";
+        }
+        return "order is null";
     }
 }

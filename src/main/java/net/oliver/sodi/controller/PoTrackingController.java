@@ -115,14 +115,15 @@ public class PoTrackingController {
 
     @GetMapping("/download")
     public String remove(HttpServletRequest request, HttpServletResponse response, String url)  {
+//            url = "D:/HIE_quote.pdf";
             File file = new File(url);
             String filename = url.substring(url.lastIndexOf("/")+1,url.length());
             // 如果文件名存在，则进行下载
             if (file.exists()) {
 
                 // 配置文件下载
-                response.setHeader("content-type", "application/octet-stream");
-                response.setContentType("application/octet-stream");
+                response.setHeader("content-Type", "octet/stream");// 告诉浏览器用什么软件可以打开此文件
+//                response.setContentType("application/octet-stream");
                 response.setHeader("Content-Disposition", "attachment;filename=" + filename);
 
                 byte[] buffer = new byte[1024];
@@ -133,10 +134,15 @@ public class PoTrackingController {
                     bis = new BufferedInputStream(fis);
                     OutputStream os = response.getOutputStream();
                     int i = bis.read(buffer);
+                    int total = i;
                     while (i != -1) {
                         os.write(buffer, 0, i);
                         i = bis.read(buffer);
+                        total +=i;
                     }
+                    System.out.println(total);
+                    os.flush();
+                    response.flushBuffer();
                     System.out.println("Download the file successfully!");
                 }
                 catch (Exception e) {

@@ -1,6 +1,7 @@
 package net.oliver.sodi.service.impl;
 
 import net.oliver.sodi.dao.IOrderDao;
+import net.oliver.sodi.model.Invoice;
 import net.oliver.sodi.model.InvoicesResult;
 import net.oliver.sodi.model.Order;
 import net.oliver.sodi.model.OrderResult;
@@ -33,6 +34,12 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public void save(Order order) {
         dao.save(order);
+    }
+
+
+    @Override
+    public Order findById(int id) {
+        return dao.findOne(id);
     }
 
     @Override

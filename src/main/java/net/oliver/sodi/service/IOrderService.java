@@ -12,6 +12,6 @@ public interface IOrderService {
     public List<Order> findAll();
     public void save(List<Order> orders);
     public void save(Order order);
-
+    public Order findById(int id);
     OrderResult findAll(PageRequest request);
 }

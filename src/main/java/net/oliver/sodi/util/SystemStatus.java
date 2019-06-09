@@ -87,12 +87,7 @@ public class SystemStatus {
                 String v = x<10?"0"+x:""+x;
                 result.add(String.valueOf(cal.get(Calendar.YEAR))+v);
             }
-
-
         }
-
-
-
         return result;
     }
 
