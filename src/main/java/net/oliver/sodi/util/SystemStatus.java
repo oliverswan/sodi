@@ -1,10 +1,14 @@
 package net.oliver.sodi.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class SystemStatus {
+
 
     public static int getCurrentYM()
     {
@@ -15,6 +19,24 @@ public class SystemStatus {
 
         String x = month<10?"0"+month:""+month;
         return Integer.parseInt(year+""+x);
+    }
+
+    // 12/10/2018 03:13:01
+    public static int getCurrentYM(String invoicedate)
+    {
+        Date date = null;
+        try {
+            date = XeroUtil.dateFormat.parse(invoicedate);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH)+1;
+            String x = month<10?"0"+month:""+month;
+            return Integer.parseInt(year+""+x);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return getCurrentYM();
     }
 
     public static String getCurrentYear()
@@ -56,7 +78,7 @@ public class SystemStatus {
         {
             for (int x =month;x>0;x--)
             {
-                int cm = currentMonth - month;
+                int cm = currentMonth - x;
                 String v = cm<10?"0"+cm:""+cm;
                 if(v.equals("00"))
                     v = "01";

@@ -59,7 +59,7 @@ public class ReportController {
     private String[] columns = {"Seq", "Code","Stock","SPM","Reorder"};//,"Unit Cost","Margin"
     private String[] backOrdercolumns = {"Code", "Quantity","Distribute"};
     private String[] deliveryColumns = {"Name", "Items"};
-    private String[] deliveryColumns2 = {"Code", "Name", "Quantity", "Days", "Invoice","Stock","Coming"};
+    private String[] deliveryColumns2 = {"Code", "Name", "Qty", "Days", "Invoice","Stock","Order","Value"};
     private void generatePDF(Document document,List<Item> items,int month) throws Exception {
             document.open();
             // seq,code,desc,stock,spm,reorder,cost,margin
@@ -163,31 +163,32 @@ public class ReportController {
                 StringBuffer sb = new StringBuffer();
                 List<Item> is = itemService.findByCode(entry.getKey());
                 sb.append(entry.getKey());
-                String[] desp = new String[7];
+                String[] desp = new String[8];
                 desp[0]=entry.getKey();// 0 code
-                desp[2]= String.valueOf(entry.getValue());//code
+                desp[2]= String.valueOf(entry.getValue());//2 quantity
                 if(is.size()>0)
                 {
-                    desp[1] = is.get(0).getName();// 名称
+                    desp[1] = is.get(0).getName();// 1 名称
                     if(!StringUtils.isBlank(is.get(0).getLocation())&&!"0".equals(is.get(0).getLocation()))
                         desp[0]= desp[0]+"("+is.get(0).getLocation()+")";
                     if(bo.getCreatedTime()!=null)
                     {
                         Date created = bo.getCreatedTime();
                         int n = DateUtil.calcDayOffset(created,new Date());
-                        desp[3]= String.valueOf(n);// 创建多少天了
+                        desp[3]= String.valueOf(n);// 3 创建多少天了
                     }else{
                         desp[3]= "N";// 创建多少天了
                     }
 
-                    // 创建时间;
+                    // 4 InvoiceNumbe;
                     desp[4]= bo.getInvoiceNumber();
-                    // 当前库存
+                    // 5 当前库存
                     desp[5]= String.valueOf(is.get(0).getStock());
 //                            String.valueOf(MathUtil.trimDouble(entry.getValue()*is.get(0).getPrice()));
-                    // 正在路上
+                    // 6 正在路上
                     desp[6] = String.valueOf(is.get(0).getComing());
-
+                    // 7 value
+                    desp[7] = String.valueOf(MathUtil.trimDouble(entry.getValue()*is.get(0).getPrice()));
                 }
                 tL.add(desp);
             }
@@ -199,8 +200,8 @@ public class ReportController {
     private double createDeliveryTable(Document document,List<String[]> list)
     {
         double result = 0.0;
-        PdfPTable table = new PdfPTable(7); // 设置表格是几列的
-        float[] cls = {120,150,50,35,60,50,35};
+        PdfPTable table = new PdfPTable(8); // 设置表格是几列的
+        float[] cls = {120,140,25,35,55,50,35,40};
         try {
             table.setTotalWidth(cls);//设置表格的各列宽度
             table.setLockedWidth(true);
@@ -220,8 +221,8 @@ public class ReportController {
             {
                 for(String str : l)
                     writeCell(table, str);
-                if(l[5]!=null)
-                result += Double.parseDouble(l[5]);
+                if(l[7]!=null)
+                    result += Double.parseDouble(l[7]);
             }
 
             PdfPTableEvent event = new AlternatingBackground();
@@ -439,10 +440,6 @@ public class ReportController {
 
         response.setHeader("content-Type", "application/pdf");// 告诉浏览器用什么软件可以打开此文件
         response.setHeader("Content-Disposition", "inline;filename=reorder.pdf"); // 下载文件的默认名称
-        SystemStatus.getCurrentYM();
-
-//        if(month > SystemStatus.getCurrentM())
-//            month =  SystemStatus.getCurrentM();
         // 0.根据参数
         List<SoldHistory> result = soldHistoryService.findAllForSalesHistory(month);
         Collections.sort(result);

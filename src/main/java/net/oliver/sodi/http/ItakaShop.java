@@ -16,6 +16,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -23,14 +24,15 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+@Component
 public class ItakaShop {
 
 
     private static String cookiestore = null;
-    private static String addCartToken = "1c6845cc8b93d5acfc3482caa6c8ef3e";
+    private static String addCartToken = "56023a7a2cc5154b7e15e776ffa02755";
+    public static String username;
+    public static String passwd;
 
-    @Value("${itaka.username}") private static String username;
-    @Value("${itaka.passwd}") private static String passwd;
 
 
     static final Logger logger = LoggerFactory.getLogger(ItakaShop.class);
@@ -49,7 +51,8 @@ public class ItakaShop {
             ItakaShop.login();
         }
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpGet httpGet = new HttpGet("https://www.itakashop.com/gb/module/quickorder/actions?process=checkReference&q=" + code + "&limit=10&timestamp=" + System.currentTimeMillis() + "&ajaxSearch=1&id_lang=2");
+        System.out.println(code);
+        HttpGet httpGet = new HttpGet("https://www.itakashop.com/gb/module/quickorder/actions?process=checkReference&q=" + code.trim() + "&limit=10&timestamp=" + System.currentTimeMillis() + "&ajaxSearch=1&id_lang=2");
         httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded");
         httpGet.setHeader("accept", "application/json, text/javascript, */*; q=0.01");
         httpGet.setHeader("accept-encoding", "gzip,deflate,br");
@@ -127,7 +130,8 @@ public class ItakaShop {
 
         List<NameValuePair> parameters = new ArrayList<NameValuePair>(4);
         parameters.add(new BasicNameValuePair("controller", "cart"));
-        parameters.add(new BasicNameValuePair("add", quantity));
+        parameters.add(new BasicNameValuePair("add", "1"));
+        parameters.add(new BasicNameValuePair("qty", quantity));
         parameters.add(new BasicNameValuePair("ajax", "true"));
         parameters.add(new BasicNameValuePair("id_product", itakaId));
         parameters.add(new BasicNameValuePair("ipa", "0"));
@@ -144,7 +148,7 @@ public class ItakaShop {
             System.out.println("响应状态为:" + response.getStatusLine());
             if(response.getStatusLine().toString().equals("200"))
             {
-                logger.info("Add "+quantity+" X "+itakaId +" to itaka shop.");
+                logger.info("Success Add "+quantity+" X "+itakaId +" to itaka shop.");
             }
             if (response != null) {
                 response.close();

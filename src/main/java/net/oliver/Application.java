@@ -1,7 +1,9 @@
 package net.oliver;
 
+import net.oliver.sodi.http.ItakaShop;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,6 +37,8 @@ public class Application {
 
         SpringApplication springApplication = new SpringApplication(Application.class);
 //        springApplication.addListeners(new SodiApplicationListener());
-        springApplication.run(args);
+        ConfigurableApplicationContext ctx = springApplication.run(args);
+        ItakaShop.username = ctx.getEnvironment().getProperty("itaka.username");
+        ItakaShop.passwd =ctx.getEnvironment().getProperty("itaka.passwd");
     }
 }

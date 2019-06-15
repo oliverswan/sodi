@@ -2,10 +2,8 @@ package net.oliver.sodi.controller;
 
 
 import net.oliver.sodi.http.ItakaShop;
-import net.oliver.sodi.model.InvoicesResult;
-import net.oliver.sodi.model.Item;
-import net.oliver.sodi.model.Order;
-import net.oliver.sodi.model.OrderResult;
+import net.oliver.sodi.model.*;
+import net.oliver.sodi.service.IBackorderService;
 import net.oliver.sodi.service.IItemService;
 import net.oliver.sodi.service.IOrderService;
 import net.oliver.sodi.util.MongoAutoidUtil;
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,9 @@ public class OrderController {
 
     @Autowired
     MongoAutoidUtil sequence;
+
+    @Autowired
+    IBackorderService backorderService;
 
 
     static final Logger logger = LoggerFactory.getLogger(OrderController.class);
@@ -81,6 +83,23 @@ public class OrderController {
         return "ok";
     }
 
+
+    @GetMapping("/createbackorder")
+    @ResponseBody
+    public String createbackorder()  {
+        Order order = new Order();
+          // 0.遍历backorders
+        List<BackOrderReportEntry> entries = backorderService.report(0);
+        Collections.sort(entries);
+
+        for(BackOrderReportEntry boentry : entries)
+        {
+            order.addItem(boentry.getItemCode(),boentry.getTotal());
+        }
+        service.save(order);
+        return "ok";
+    }
+
     @GetMapping("/addcart")
     @ResponseBody
 //    url = url + "pageNum=" + this.pageNum + '&pageSize=' + this.pageSize
@@ -117,6 +136,7 @@ public class OrderController {
                 }
                 ItakaShop.addCart(itakaId,String.valueOf(entry.getValue()));
             }
+            ItakaShop.reset();
             return "ok";
         }
         return "order is null";

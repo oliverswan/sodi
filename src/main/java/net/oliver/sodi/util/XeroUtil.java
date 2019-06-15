@@ -31,7 +31,7 @@ public class XeroUtil {
 //            "PrivateKeyPassword" :  "YourKeyPasssword"
 //    }
 
-    static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+    public static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
     static XeroClient client;
     static final Logger logger = LoggerFactory.getLogger(XeroUtil.class);
     static

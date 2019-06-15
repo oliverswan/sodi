@@ -2,10 +2,7 @@ package net.oliver.sodi.controller;
 
 import net.oliver.sodi.mail.SendMail;
 import net.oliver.sodi.model.*;
-import net.oliver.sodi.service.IBackorderService;
-import net.oliver.sodi.service.IInvoiceService;
-import net.oliver.sodi.service.IItemService;
-import net.oliver.sodi.service.ISoldHistoryService;
+import net.oliver.sodi.service.*;
 import net.oliver.sodi.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,6 +35,9 @@ public class InvoiceController {
 
     @Autowired
     ISoldHistoryService soldHistoryService;
+
+    @Autowired
+    IContactService contactService;
 
     @Autowired
     SendMail sendMail;
@@ -302,8 +302,9 @@ public class InvoiceController {
             }
             if(iitem.getQuantity()>0 ) {
                 importToXero = true;
-                // 统计这个item 当月销售
-                SoldHistory sh = soldHistoryService.getSoldHistory(invoice.getContactName(),iitem.getInventoryItemCode(), SystemStatus.getCurrentYM(), iitem.getQuantity());
+                // 统计这个item 当月销售                   invoice.getInvoiceDate()
+                SoldHistory sh = soldHistoryService.getSoldHistory(invoice.getContactName(),
+                iitem.getInventoryItemCode(), SystemStatus.getCurrentYM(invoice.getInvoiceDate()), iitem.getQuantity());
                 soldHistories.add(sh);
             }
             item.setSoldThisYear(sold);
@@ -560,8 +561,18 @@ public class InvoiceController {
                 bo.addItem(code,quantity);
             }
         }
-
         backorderService.save(bo);
+        // send Email
+        if(invoice.getEmailAddress() == null)
+        {
+            List<Contact> contacts = contactService.findByContactName(invoice.getContactName());
+            if(contacts.size()>0)
+            {
+                invoice.setEmailAddress(contacts.get(0).getEmailAddress());
+                invoiceService.save(invoice);
+            }
+        }
+        sendMail.doSendCancelOrder(invoice,invoice.getEmailAddress());
         return "{'status':'ok'}";
     }
 }

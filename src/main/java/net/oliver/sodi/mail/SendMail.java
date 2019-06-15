@@ -3,6 +3,8 @@ package net.oliver.sodi.mail;
 import net.oliver.sodi.controller.InvoiceController;
 import net.oliver.sodi.model.Backorder;
 import net.oliver.sodi.model.Invoice;
+import net.oliver.sodi.model.InvoiceItem;
+import net.oliver.sodi.model.Item;
 import net.oliver.sodi.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,6 +139,66 @@ public class SendMail {
             }
         }
     }
+    public void doSendCancelOrder(Invoice invoice, String receiveUser) {
+        if(receiveUser == null)
+            return;
+        try {
+            // 发件人
+            InternetAddress from = new InternetAddress(sender_username);
+            message.setFrom(from);
+
+            // 收件人
+            InternetAddress to = new InternetAddress(receiveUser);
+            message.setRecipient(Message.RecipientType.TO, to);
+
+            // 邮件主题
+            message.setSubject("Sorry,we dont have the items of your order.");
+
+            // 向multipart对象中添加邮件的各个部分内容，包括文本内容和附件
+            Multipart multipart = new MimeMultipart();
+
+            // 添加邮件正文
+            BodyPart contentPart = new MimeBodyPart();
+
+            StringBuffer sb = new StringBuffer();
+            sb.append("Dear Customer,").append("<br><br>").append("Thank you for the order you placed. Unfortunately, the following item(s) you've ordered are currently not available and have been placed on back order.<br><br>");
+            for(InvoiceItem item :invoice.getItems())
+            {
+                sb.append(item.getQuantity()+" X "+ item.getDescription()).append("<br>");
+            }
+            sb.append("<br>");
+            sb.append("These items are on order with Sodi and we'll ship them  as soon as possible.");
+            sb.append("If you have any questions, please contact us.<br>");
+            sb.append("We appreciate your business and we apologize for any inconvenience this delay causes you.<br><br>");
+            sb.append("Kind regards<br>");
+            sb.append("Sodi Karts Australasia");
+            contentPart.setContent(sb.toString(), "text/html;charset=UTF-8");
+            multipart.addBodyPart(contentPart);
+            message.setContent(multipart);
+
+            Transport.send(message);
+            // 保存邮件
+            /*// message.saveChanges();
+            transport = session.getTransport("smtp");
+            // smtp验证，就是你用来发邮件的邮箱用户名密码
+            transport.connect(mailHost, sender_username, sender_password);
+            //            // 发送
+            transport.sendMessage(message, message.getAllRecipients());
+            transport.close();*/
+            logger.info("Successfully send backorder Email to: "+receiveUser);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (transport != null) {
+                try {
+                    transport.close();
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public void doSendBackOrderRemindEmail(Invoice invoice, Backorder bo, String receiveUser) {
         try {
             // 发件人

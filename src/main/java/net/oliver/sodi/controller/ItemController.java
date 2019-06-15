@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -50,7 +51,6 @@ public class ItemController {
 
     private static double totalValues = 0;
     private static boolean recal = false;
-
 
 
     static final Logger logger = LoggerFactory.getLogger(ItemController.class);
@@ -415,8 +415,6 @@ public class ItemController {
     @ResponseBody
     public String updateitakaid()  {
         List<Item> items = service.findAll();
-//        ItakaShop shop = new ItakaShop();
-
         for(Item item : items)
         {
             String itakaId = ItakaShop.getItakaId(item.getCode());
@@ -427,6 +425,7 @@ public class ItemController {
 
         }
         service.save(items);
+        ItakaShop.reset();
         return "ok";
     }
 

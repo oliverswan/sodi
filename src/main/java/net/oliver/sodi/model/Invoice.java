@@ -27,7 +27,7 @@ public class Invoice {
     private String invoiceNumber;
     private String reference;
     private String orderNumber;
-    private String invoiceDate;
+    private String invoiceDate;// 12/10/2018 03:13:01
     private String dueDate;
     private int status;/* 0 draft 1 approved 2 imported 3 sent to client*/
     private List<InvoiceItem> items = new ArrayList<InvoiceItem>();
