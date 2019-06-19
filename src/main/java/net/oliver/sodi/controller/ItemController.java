@@ -1,6 +1,13 @@
 package net.oliver.sodi.controller;
 
 import com.itextpdf.text.pdf.PdfWriter;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import com.opencsv.CSVReader;
 import net.oliver.sodi.dao.IItemDao;
 import net.oliver.sodi.http.ItakaShop;
@@ -11,6 +18,7 @@ import net.oliver.sodi.util.MathUtil;
 import net.oliver.sodi.util.MongoAutoidUtil;
 import net.oliver.sodi.util.SystemStatus;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -358,8 +366,21 @@ public class ItemController {
             }
             recal = false;
         }
+
+        List<Item> items = service.findByCode("TYMK4.50");
+        double meakone1 = MathUtil.trimDouble(items.get(0).getStock()*items.get(0).getSpriceAu());
+        items = service.findByCode("TYMK7.10");
+        double meakone2 = MathUtil.trimDouble(items.get(0).getStock()*items.get(0).getSpriceAu());
+
+         items = service.findByCode("TYMH450");
+        double maxpower1 = MathUtil.trimDouble(items.get(0).getStock()*items.get(0).getSpriceAu());
+        items = service.findByCode("TYMH710");
+        double maxpower2 = MathUtil.trimDouble(items.get(0).getStock()*items.get(0).getSpriceAu());
+
         Statistic s = new Statistic();
         s.setTotalvalues(totalValues);
+        s.setMeakonevalues(meakone1+meakone2);
+        s.setMaxpowervalues(maxpower1+maxpower2);
         return s;
     }
 
@@ -473,5 +494,39 @@ public class ItemController {
         }
         service.save(updates);
 
+    }
+
+    @RequestMapping(value = { "/updateSeq" }, method = { RequestMethod.GET })
+    public String updateSeq(String invoiceSeq,String refernceSeq)  {
+
+        MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://sodi:26IR9BHN5tXR@45.78.74.5:18946/sodi"));
+        MongoDatabase db = mongoClient.getDatabase("sodi");
+        MongoCollection<org.bson.Document> seqs = db.getCollection("mongoSequence");
+
+        BasicDBObject query = new BasicDBObject().append("_id", "invoiceNumber");
+        FindIterable<org.bson.Document> findIterable = seqs.find(query);
+
+        MongoCursor<org.bson.Document> mongoCursor = findIterable.iterator();
+        while (mongoCursor.hasNext()) {
+            Document document = (Document) mongoCursor.next();
+            BasicDBObject updateCondition = new BasicDBObject();
+            updateCondition.put("_id", "invoiceNumber");
+            document.put("seq",invoiceSeq);
+            seqs.replaceOne(updateCondition, document);
+        }
+
+        BasicDBObject query2 = new BasicDBObject().append("_id", "invoiceReference");
+        FindIterable<org.bson.Document> findIterable2 = seqs.find(query2);
+
+        MongoCursor<org.bson.Document> mongoCursor2 = findIterable2.iterator();
+        while (mongoCursor2.hasNext()) {
+            Document document2 = (Document) mongoCursor2.next();
+            BasicDBObject updateCondition2 = new BasicDBObject();
+            updateCondition2.put("_id", "invoiceReference");
+            document2.put("seq",refernceSeq);
+            seqs.replaceOne(updateCondition2, document2);
+        }
+
+        return "ok";
     }
 }

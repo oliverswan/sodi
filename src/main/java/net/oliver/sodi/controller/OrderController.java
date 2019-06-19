@@ -108,8 +108,6 @@ public class OrderController {
         Order order = service.findById(id);
         if(order != null)
         {
-
-
             // 1.遍历所有item 添加到order
             for(Iterator iter = order.getItems().entrySet().iterator();iter.hasNext(); )
             {
