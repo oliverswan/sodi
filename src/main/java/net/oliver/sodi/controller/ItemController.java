@@ -341,12 +341,12 @@ public class ItemController {
 
     @GetMapping("/price")
     @ResponseBody
-    public String price(double rate,double freight, double duty )  {
+    public String price( )  {//double rate,double freight, double duty
 
         List<Item> all = service.findAll();
         for(Item item : all)
         {
-            item.updateProfit(0, 0,rate,freight, duty);
+            item.updateProfit();//0, 0,rate,freight, duty
             service.save(item);
         }
         return "ok";

@@ -77,7 +77,8 @@ public class OrderController {
         {
             String code = item.getCode();
             int reorder =  (int)Math.rint(month*item.getSpm()-item.getStock());
-            order.addItem(code,reorder);
+//            if(reorder > 1)
+                order.addItem(code,reorder);
         }
         service.save(order);
         return "ok";
@@ -88,6 +89,7 @@ public class OrderController {
     @ResponseBody
     public String createbackorder()  {
         Order order = new Order();
+        order.setId(sequence.getNextSequence("order"));
           // 0.遍历backorders
         List<BackOrderReportEntry> entries = backorderService.report(0);
         Collections.sort(entries);

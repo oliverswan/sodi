@@ -49,7 +49,7 @@ public class ItemSericeImpl implements IItemService {
     @Override
     public List<Item> findAllForReorder(int month) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("msoh").lt(month).andOperator(Criteria.where("spm").gt(0.1)));//.gt(20));
+        query.addCriteria(Criteria.where("msoh").lt(month).andOperator(Criteria.where("spm").gt(0)));//.gt(20));
         return mongoTemplate.find(query,Item.class);
     }
 

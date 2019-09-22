@@ -59,9 +59,10 @@ public class Item implements Comparable<Item> {
     private String profit;// 利润率
 
 
-    public void updateProfit(double cprice, double sprice, double rate,double freight, double duty)
+    // double cprice, double sprice, double rate,double freight, double duty
+    public void updateProfit()
     {
-        if(cprice!=0)
+       /* if(cprice!=0)
         this.cprice = cprice;
         if(sprice!=0)
         this.sprice = sprice;//Landed price
@@ -69,14 +70,18 @@ public class Item implements Comparable<Item> {
         this.cpriceAu = MathUtil.trimDouble((this.cprice / rate)*freight*duty);
         this.spriceAu = MathUtil.trimDouble((this.sprice / rate)*freight*duty);
 
-        this.value = MathUtil.trimDouble(this.spriceAu * this.stock);//Landed price
-        double p = ((this.cpriceAu - this.price)/this.price)*100;
-        this.profit =MathUtil.trimDoubleString(p)  +"%";
+        this.value = MathUtil.trimDouble(this.spriceAu * this.stock);//Landed price*/
+        double p = ((this.price - this.spriceAu)/this.price)*100;
+        this.setProfit(MathUtil.trimDoubleString(p)  +"%");
     }
 
     public void reCalValue()
     {
-        this.value = MathUtil.trimDouble(this.spriceAu * this.stock);//Landed price
+        this.setValue(MathUtil.trimDouble(this.spriceAu * this.stock));//Landed price
+        if(this.spm > 0)
+            this.setMsoh(MathUtil.trimDouble(this.stock/this.spm));
+        else
+            this.setMsoh(this.getStock());
     }
 
     public double getSprice() {
@@ -180,11 +185,11 @@ public class Item implements Comparable<Item> {
         double spm2 = (float)this.soldThisYear/month;
         this.spm = MathUtil.trimDouble(spm2);
         if(this.stock <= 0)
-            this.msoh =0;
+            this.setMsoh(0);
         else if(this.spm <=0)
-            this.msoh = this.stock;
+            this.setMsoh(this.stock);
         else
-            this.msoh = MathUtil.trimDouble(this.stock/this.spm);
+            this.setMsoh(MathUtil.trimDouble(this.stock/this.spm));
     }
 
     public synchronized void addSold(int s)
@@ -217,12 +222,12 @@ public class Item implements Comparable<Item> {
         this.soldHistory = soldHistory;
     }
 
-    public double getMonthStockOnHand() {
-        return msoh;
-    }
-    public void setMonthStockOnHand(double monthStockOnHand) {
-        this.msoh = monthStockOnHand;
-    }
+//    public double getMonthStockOnHand() {
+//        return msoh;
+//    }
+//    public void setMonthStockOnHand(double monthStockOnHand) {
+//        this.msoh = monthStockOnHand;
+//    }
     public int getStock() {
         return stock;
     }
@@ -232,11 +237,11 @@ public class Item implements Comparable<Item> {
         try {
             if(this.spm == 0)
             {
-                this.msoh = this.stock;
+                this.setMsoh(this.stock);
                 return;
             }
             double msoh2 = (double)this.stock/this.spm;
-            this.msoh = MathUtil.trimDouble(msoh2);
+            this.setMsoh(MathUtil.trimDouble(msoh2));
         }catch (Exception e)
         {
             e.printStackTrace();
